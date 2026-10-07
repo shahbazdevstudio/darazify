@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Darazify — Leather goods and PC games</title>
+  <meta name="description" content="Shop hand-finished leather wallets, bags and belts alongside the latest PC games at 250 PKR each. One cart, one delivery.">
+  <meta name="theme-color" content="#1a1310">
+  <script>document.documentElement.dataset.theme = localStorage.getItem('dz_theme') || 'dark';</script>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='9' fill='%23b5621f'/%3E%3Cpath d='M11.5 9.5h4.6c4.3 0 6.4 2.7 6.4 6.5s-2.1 6.5-6.4 6.5h-4.6z' fill='%231a1310'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Instrument+Sans:wght@400..700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/global.css">
+  <link rel="stylesheet" href="/css/navbar.css">
+  <link rel="stylesheet" href="/css/footer.css">
+  <link rel="stylesheet" href="/css/cards.css">
+  <link rel="stylesheet" href="/css/hero.css">
+</head>
+<body>
+  <div id="site-header"></div>
+  <main id="main">
+    <section class="hero" aria-labelledby="heroTitle">
+      <div class="hero__bg" aria-hidden="true">
+        <div class="hero__screen"></div>
+        <div class="hero__leather"></div>
+        <svg class="hero__seam" viewBox="0 0 100 100" preserveAspectRatio="none">
+          <g class="seam--d">
+            <line x1="57.3" y1="0" x2="46.3" y2="100" stroke="rgba(0,0,0,.4)" stroke-width="3" vector-effect="non-scaling-stroke"/>
+            <line x1="57" y1="0" x2="46" y2="100" stroke="#e4c88f" stroke-width="2.4" stroke-dasharray="9 7" stroke-linecap="round" vector-effect="non-scaling-stroke"/>
+          </g>
+          <g class="seam--m">
+            <line x1="0" y1="60.4" x2="100" y2="52.4" stroke="rgba(0,0,0,.4)" stroke-width="3" vector-effect="non-scaling-stroke"/>
+            <line x1="0" y1="60" x2="100" y2="52" stroke="#e4c88f" stroke-width="2.4" stroke-dasharray="9 7" stroke-linecap="round" vector-effect="non-scaling-stroke"/>
+          </g>
+        </svg>
+      </div>
+      <div class="container hero__inner">
+        <div class="hero__copy">
+          <h1 class="hero__title" id="heroTitle"><span>Leather made to last.</span><span>Games made to play.</span></h1>
+          <p class="hero__lead">Hand-finished wallets, bags and belts, plus the latest PC games at one simple price. Put both in the same cart and we deliver them together.</p>
+          <div class="hero__cta">
+            <a class="btn btn-lg btn-signal" href="/pages/games.html">Explore games</a>
+            <a class="btn btn-lg btn-primary" href="/pages/products.html">Shop leather products</a>
+          </div>
+        </div>
+        <div class="hero__stage" id="heroStage" aria-label="Popular games">
+          <div class="cover cover--1 skeleton"></div><div class="cover cover--2 skeleton"></div><div class="cover cover--3 skeleton"></div>
+        </div>
+        <div class="patch" aria-label="Every game costs 250 PKR"><strong>250 PKR</strong><span>every game, no exceptions</span></div>
+      </div>
+    </section>
+
+    <div class="container">
+      <div class="perks">
+        <div class="perk"><span class="perk__icon" data-i="bag"></span><div><h3>Leather and games, one cart</h3><p>Check out once and get both in the same order.</p></div></div>
+        <div class="perk"><span class="perk__icon" data-i="gamepad"></span><div><h3>Every game is 250 PKR</h3><p>No tiers or surprises, whatever the title.</p></div></div>
+        <div class="perk"><span class="perk__icon" data-i="phone"></span><div><h3>Confirmed by the seller</h3><p>After you order, the seller contacts you to confirm delivery.</p></div></div>
+      </div>
+    </div>
+
+    <section class="section" aria-labelledby="latestGamesTitle">
+      <div class="container">
+        <div class="section__head">
+          <div><h2 class="section__title" id="latestGamesTitle">Latest games</h2><p class="section__sub">Fresh PC releases from the past year.</p></div>
+          <a class="btn btn-secondary" href="/pages/games.html">View all games</a>
+        </div>
+        <div class="grid" id="latestGames"></div>
+      </div>
+    </section>
+
+    <section class="section section--tight" aria-labelledby="popularTitle">
+      <div class="container">
+        <div class="section__head">
+          <div><h2 class="section__title" id="popularTitle">Popular games</h2><p class="section__sub">What players are adding to their libraries most.</p></div>
+          <div class="section__tools">
+            <div class="rail-btns"><button class="icon-btn" data-rail-btn="popularGames" data-dir="prev" aria-label="Scroll left" data-i="left"></button><button class="icon-btn" data-rail-btn="popularGames" data-dir="next" aria-label="Scroll right" data-i="right"></button></div>
+            <a class="btn btn-secondary" href="/pages/games.html?sort=-added">See more</a>
+          </div>
+        </div>
+        <div class="rail" id="popularGames" tabindex="0" aria-label="Popular games"></div>
+      </div>
+    </section>
+
+    <section class="section" aria-labelledby="featuredTitle">
+      <div class="container">
+        <div class="section__head">
+          <div><h2 class="section__title" id="featuredTitle">Featured leather</h2><p class="section__sub">Hand-picked pieces from the collection.</p></div>
+          <a class="btn btn-secondary" href="/pages/products.html">View all products</a>
+        </div>
+        <div class="grid grid--products" id="featuredProducts"></div>
+      </div>
+    </section>
+
+    <section class="section section--tight" aria-labelledby="latestProductsTitle">
+      <div class="container">
+        <div class="section__head">
+          <div><h2 class="section__title" id="latestProductsTitle">New in leather</h2><p class="section__sub">The newest additions, just listed.</p></div>
+          <a class="btn btn-secondary" href="/pages/products.html?sort=newest">Browse new arrivals</a>
+        </div>
+        <div class="grid grid--products" id="latestProducts"></div>
+      </div>
+    </section>
+  </main>
+  <div id="site-footer"></div>
+  <script type="module" src="/js/home.js"></script>
+  <script type="module" src="/js/icons-dom.js"></script>
+</body>
+</html>

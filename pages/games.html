@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>All games — Darazify</title>
+  <meta name="description" content="Browse PC games at a fixed 250 PKR each. Search by title, filter by genre and sort by popularity, rating or release date.">
+  <meta name="theme-color" content="#1a1310">
+  <script>document.documentElement.dataset.theme = localStorage.getItem('dz_theme') || 'dark';</script>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='9' fill='%23b5621f'/%3E%3Cpath d='M11.5 9.5h4.6c4.3 0 6.4 2.7 6.4 6.5s-2.1 6.5-6.4 6.5h-4.6z' fill='%231a1310'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Instrument+Sans:wght@400..700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/global.css">
+  <link rel="stylesheet" href="/css/navbar.css">
+  <link rel="stylesheet" href="/css/footer.css">
+  <link rel="stylesheet" href="/css/cards.css">
+  <link rel="stylesheet" href="/css/games.css">
+</head>
+<body>
+  <div id="site-header"></div>
+  <main id="main">
+    <div class="container">
+      <header class="page-head page-head--games">
+        <h1>All games</h1>
+        <p>Every PC game costs 250 PKR. Search a title, narrow by genre, or sort by what is popular.</p>
+      </header>
+      <form class="toolbar" onsubmit="return false" role="search" aria-label="Filter games">
+        <div class="field"><label for="fSearch">Search</label><div class="input-icon"><span data-i="search" data-s="18"></span><input class="input" id="fSearch" type="search" placeholder="Search by game title" maxlength="80" autocomplete="off"></div></div>
+        <div class="field"><label for="fGenre">Genre</label><select class="select" id="fGenre"><option value="">All genres</option></select></div>
+        <div class="field"><label for="fSort">Sort by</label>
+          <select class="select" id="fSort">
+            <option value="">Best match</option><option value="-added">Most popular</option><option value="-rating">Top rated</option><option value="-released">Newest</option><option value="name">Name A–Z</option>
+          </select></div>
+      </form>
+      <div id="results">
+        <div class="result-bar"><span id="resultCount" aria-live="polite"></span><button class="link-btn" id="clearFilters" hidden>Clear filters</button></div>
+        <div class="grid" id="gamesGrid"></div>
+        <div id="pager"></div>
+      </div>
+    </div>
+  </main>
+  <div id="site-footer"></div>
+  <script type="module" src="/js/games.js"></script>
+  <script type="module" src="/js/icons-dom.js"></script>
+</body>
+</html>

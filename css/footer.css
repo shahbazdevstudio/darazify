@@ -1,0 +1,12 @@
+.footer { margin-top: clamp(3rem, 6vw, 5rem); background: var(--bg-2); border-top: 1.5px dashed var(--line-strong); }
+.footer__grid { display: grid; grid-template-columns: 1.6fr repeat(3, 1fr); gap: 2.5rem; padding-block: 3.5rem 2.5rem; }
+.footer__brand p { color: var(--text-2); margin-top: 1rem; max-width: 40ch; }
+.footer__social { display: flex; gap: .5rem; flex-wrap: wrap; margin-top: 1.2rem; }
+.footer h4 { font: 650 1rem var(--font-display); margin-bottom: 1rem; }
+.footer li + li { margin-top: .6rem; }
+.footer li a { color: var(--text-2); transition: color .2s; }
+.footer li a:hover { color: var(--thread); }
+.footer__contact li { display: flex; align-items: center; gap: .6rem; color: var(--thread); }
+.footer__bottom { display: flex; justify-content: space-between; gap: 1rem; flex-wrap: wrap; padding-block: 1.4rem 2rem; border-top: 1px dashed var(--line); color: var(--text-3); font-size: .88rem; }
+@media (max-width: 900px) { .footer__grid { grid-template-columns: 1fr 1fr; } .footer__brand { grid-column: 1 / -1; } }
+@media (max-width: 480px) { .footer__grid { grid-template-columns: 1fr; gap: 2rem; } }

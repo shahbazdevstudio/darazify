@@ -1,0 +1,53 @@
+/* Shared card + grid primitives (games and products build on these) */
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 1.4rem; }
+.grid--products { grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); }
+
+.card { position: relative; display: flex; flex-direction: column; background: var(--surface); border: 1px solid var(--line); border-radius: 20px; overflow: hidden; transition: transform .35s var(--ease), border-color .3s, box-shadow .35s; }
+.card:hover { transform: translateY(-5px); box-shadow: var(--shadow-2); }
+.card__media { position: relative; display: block; aspect-ratio: 16 / 10; overflow: hidden; background: var(--surface-2); }
+.card__media--square { aspect-ratio: 1; }
+.card-img { width: 100%; height: 100%; object-fit: cover; transition: transform .7s var(--ease), opacity .45s; }
+.card:hover .card-img { transform: scale(1.06); }
+.card-img--empty { display: grid; place-items: center; color: var(--text-3); background: linear-gradient(135deg, var(--surface-2), var(--surface)); }
+.card:hover .card-img--empty { transform: none; }
+
+.card__badge { position: absolute; top: .75rem; z-index: 2; padding: .28rem .6rem; border-radius: 8px; font-size: .78rem; font-weight: 700; }
+.card__badge--rating { right: .75rem; background: rgba(12, 8, 6, .72); color: #fff; backdrop-filter: blur(6px); }
+.card__badge--sale { left: .75rem; background: var(--accent); color: #fff; }
+.card__badge--out { right: .75rem; background: rgba(12, 8, 6, .8); color: #fff; }
+
+.card__body { display: flex; flex-direction: column; flex: 1; padding: 1rem 1.1rem 1.15rem; gap: .35rem; }
+.card__title { font: 650 1.05rem/1.25 var(--font-display); letter-spacing: -.015em; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; min-height: 2.5em; }
+.card__title a:hover { text-decoration: underline; text-decoration-color: var(--thread); text-underline-offset: 3px; }
+.card__meta { color: var(--text-3); font-size: .85rem; min-height: 1.3em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.card__cat { color: var(--thread); font-size: .82rem; font-weight: 600; }
+.card__desc { color: var(--text-2); font-size: .88rem; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; min-height: 2.7em; }
+.card__price { display: flex; align-items: baseline; gap: .6rem; margin-top: .3rem; }
+.card__price strong { font: 700 1.2rem var(--font-display); letter-spacing: -.02em; }
+.card__price s { color: var(--text-3); font-size: .88rem; }
+.card__price .chip { margin-left: auto; align-self: center; }
+.card__stock { color: var(--warn); font-size: .8rem; font-weight: 600; }
+.card__actions { display: grid; grid-template-columns: 1fr 1.25fr; gap: .5rem; margin-top: auto; padding-top: .8rem; }
+.card__actions .btn { padding-inline: .6rem; }
+
+.g-card:hover { border-color: var(--signal); box-shadow: 0 0 0 1px var(--signal), var(--shadow-2); }
+.p-card:hover { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent), var(--shadow-2); }
+.p-card .card-img--alt { position: absolute; inset: 0; opacity: 0; }
+.p-card:hover .card-img--alt { opacity: 1; }
+.p-card:hover .card__media .card-img:not(.card-img--alt) { transform: none; }
+
+.card--skeleton { pointer-events: none; }
+.card--skeleton:hover { transform: none; box-shadow: none; }
+.card--skeleton .card__body { gap: .7rem; padding-top: 1.1rem; }
+.sk-line { height: 14px; } .sk-line.w60 { width: 60%; } .sk-line.w40 { width: 40%; } .sk-line.w100 { width: 100%; }
+.sk-btn { height: 38px; margin-top: .6rem; border-radius: 10px; }
+.card--skeleton .card__media { border-radius: 0; }
+
+@media (max-width: 520px) {
+  .grid, .grid--products { grid-template-columns: repeat(2, 1fr); gap: .8rem; }
+  .card__body { padding: .8rem .8rem 1rem; }
+  .card__actions { grid-template-columns: 1fr; }
+  .card__actions .btn:first-child { order: 2; }
+  .card__price .chip { display: none; }
+}
+@media (max-width: 340px) { .grid, .grid--products { grid-template-columns: 1fr; } }
