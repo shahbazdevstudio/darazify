@@ -1,4 +1,4 @@
-import { api } from './api.js';
+import { api, setToken } from './api.js';
 
 let user = null;
 const HINT = 'dz_session_hint';
@@ -16,8 +16,9 @@ export const Auth = {
       const data = await api('/auth/me');
       user = data.user;
       localStorage.setItem(HINT, '1');
-    } catch {
+    } catch (err) {
       user = null;
+      if (err.status === 401) setToken(null, 'user'); // stale / expired token
       localStorage.removeItem(HINT);
     }
     emit();
@@ -26,6 +27,7 @@ export const Auth = {
 
   async login(email, password) {
     const data = await api('/auth/login', { method: 'POST', body: { email, password } });
+    setToken(data.token, 'user');
     user = data.user;
     localStorage.setItem(HINT, '1');
     emit();
@@ -34,6 +36,7 @@ export const Auth = {
 
   async register(payload) {
     const data = await api('/auth/register', { method: 'POST', body: payload });
+    setToken(data.token, 'user');
     user = data.user;
     localStorage.setItem(HINT, '1');
     emit();
@@ -42,6 +45,7 @@ export const Auth = {
 
   async logout() {
     try { await api('/auth/logout', { method: 'POST' }); } finally {
+      setToken(null, 'user');
       user = null;
       localStorage.removeItem(HINT);
       emit();

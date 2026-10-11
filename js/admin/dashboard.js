@@ -18,7 +18,9 @@ const stat = (iconName, label, value, hint = '', tone = '') => `
       el.innerHTML = `
         <section class="stats" aria-label="Key numbers">
           ${stat('users', 'Total users', d.totalUsers.toLocaleString(), d.blockedUsers ? `${d.blockedUsers} blocked` : 'None blocked')}
-          ${stat('package', 'Products', d.totalProducts.toLocaleString())}
+          ${stat('package', 'Leather products', d.totalProducts.toLocaleString())}
+          ${stat('gamepad', 'Games in store', (d.totalGames ?? 0).toLocaleString())}
+          ${stat('code', 'Software', (d.totalSoftware ?? 0).toLocaleString())}
           ${stat('receipt', 'Total orders', d.totalOrders.toLocaleString())}
           ${stat('trend', 'Revenue', formatPrice(d.revenue), 'Excludes cancelled', 'stat--accent')}
           ${stat('clock', 'Pending', s.Pending, 'Need a call', 'stat--warn')}
@@ -35,7 +37,7 @@ const stat = (iconName, label, value, hint = '', tone = '') => `
             ${d.recentOrders.length ? `<div class="table-wrap"><table class="tbl"><thead><tr><th>Order</th><th>Customer</th><th>Total</th><th>Status</th></tr></thead><tbody>${d.recentOrders.map((o) => `<tr><td data-label="Order"><div><a class="link" href="/admin/orders.html?id=${esc(o.orderId)}">#${esc(o.orderId)}</a><small>${formatDate(o.createdAt)}</small></div></td><td data-label="Customer">${esc(o.customer.name)}</td><td data-label="Total">${formatPrice(o.total)}</td><td data-label="Status">${statusBadge(o.status)}</td></tr>`).join('')}</tbody></table></div>` : tableState('receipt', 'No orders yet', 'New orders will appear here as customers place them.')}
           </article>
           <article class="card-box"><header><h2>Low stock</h2><a class="link" href="/admin/products.html">Products</a></header>
-            ${d.lowStock.length ? `<ul class="low-list">${d.lowStock.map((p) => `<li><span class="thumb-sm">${p.images?.[0] ? `<img src="${esc(cdn(p.images[0].url, 100))}" alt="">` : ''}</span><a class="link" href="/admin/product-form.html?id=${p._id}">${esc(p.title)}</a><b class="${p.stock === 0 ? 'is-out' : ''}">${p.stock === 0 ? 'Sold out' : `${p.stock} left`}</b></li>`).join('')}</ul>` : tableState('check', 'Stock looks healthy', 'Products with 5 or fewer units show up here.')}
+            ${d.lowStock.length ? `<ul class="low-list">${d.lowStock.map((p) => `<li><span class="thumb-sm">${p.images?.[0] ? `<img src="${esc(cdn(p.images[0].url, 100))}" alt="">` : ''}</span><a class="link" href="/admin/product-form.html?id=${p._id}">${esc(p.title)}</a><b class="${p.stock === 0 ? 'is-out' : ''}">${p.stock === 0 ? 'Sold out' : `${p.stock} left`}</b></li>`).join('')}</ul>` : tableState('check', 'Stock looks healthy', 'Leather products with 5 or fewer units show up here.')}
           </article>
         </section>`;
     } catch (err) {

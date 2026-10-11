@@ -2,9 +2,10 @@
 .page-head { padding-block: clamp(2.2rem, 5vw, 3.8rem) 1.6rem; position: relative; }
 .page-head h1 { font-size: clamp(2.1rem, 4.5vw, 3.4rem); letter-spacing: -.035em; }
 .page-head p { color: var(--text-2); margin-top: .7rem; max-width: 56ch; font-size: 1.05rem; }
-.page-head--games::before, .page-head--leather::before { content: ''; position: absolute; left: 0; top: 0; width: 64px; height: 5px; border-radius: 3px; }
+.page-head--games::before, .page-head--leather::before, .page-head--software::before { content: ''; position: absolute; left: 0; top: 0; width: 64px; height: 5px; border-radius: 3px; }
 .page-head--games::before { background: var(--signal); }
 .page-head--leather::before { background: var(--accent); }
+.page-head--software::before { background: var(--soft); }
 
 .toolbar { display: grid; grid-template-columns: minmax(0, 1fr) 210px 210px; gap: .9rem; align-items: end; padding: 1.1rem; border: 1px solid var(--line); background: var(--surface); border-radius: var(--r-lg); }
 .toolbar--products { grid-template-columns: minmax(0, 1fr) 230px; }

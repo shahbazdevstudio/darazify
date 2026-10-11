@@ -1,5 +1,15 @@
 import { API_BASE_URL } from './config.js';
 
+/**
+ * The login token is ALSO kept here and sent as `Authorization: Bearer`. This is a fallback for
+ * browsers that block cross-site cookies (the httpOnly cookie is still used whenever it works).
+ * Customers and admins keep separate tokens.
+ */
+export const TOKEN_KEYS = { user: 'dz_token', admin: 'dz_admin_token' };
+const area = () => (window.location.pathname.startsWith('/admin') ? 'admin' : 'user');
+export const getToken = (a = area()) => localStorage.getItem(TOKEN_KEYS[a]);
+export const setToken = (token, a = area()) => (token ? localStorage.setItem(TOKEN_KEYS[a], token) : localStorage.removeItem(TOKEN_KEYS[a]));
+
 export class ApiError extends Error {
   constructor(message, status = 0, errors = null) {
     super(message);
@@ -21,6 +31,8 @@ export async function api(path, { method = 'GET', body, params, signal } = {}) {
   }
 
   const headers = {};
+  const token = getToken();
+  if (token) headers.Authorization = `Bearer ${token}`;
   const opts = { method, credentials: 'include', headers, signal };
   if (body instanceof FormData) opts.body = body;
   else if (body !== undefined) {

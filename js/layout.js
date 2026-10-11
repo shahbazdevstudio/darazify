@@ -10,6 +10,7 @@ import { esc } from './utils.js';
 const LINKS = [
   { href: '/pages/games.html', label: 'Games' },
   { href: '/pages/products.html', label: 'Leather' },
+  { href: '/pages/software.html', label: 'Software' },
 ];
 
 const here = () => window.location.pathname;
@@ -19,7 +20,7 @@ const searchHTML = (id) => `
   <div class="search" data-search>
     <form role="search" autocomplete="off">
       <span class="search__icon">${icon('search', 20)}</span>
-      <input id="${id}" type="search" name="q" placeholder="Search games or leather" aria-label="Search games and leather products" role="combobox" aria-expanded="false" aria-controls="${id}-panel" maxlength="60">
+      <input id="${id}" type="search" name="q" placeholder="Search games, leather or software" aria-label="Search games and leather products" role="combobox" aria-expanded="false" aria-controls="${id}-panel" maxlength="60">
     </form>
     <div class="search__panel" id="${id}-panel" role="listbox" hidden></div>
   </div>`;
@@ -74,10 +75,10 @@ const footerHTML = () => {
     <div class="container footer__grid">
       <div class="footer__brand">
         <a class="brand" href="/index.html"><span class="brand__name">Daraz<span>ify</span></span></a>
-        <p>Leather goods made to be carried daily, and PC games at one simple price. Order both in a single cart and the seller confirms by phone.</p>
+        <p>Leather goods made to be carried daily, PC games at one simple price, and useful software. Order them in a single cart and the seller confirms by phone.</p>
         ${socials ? `<div class="footer__social">${socials}</div>` : ''}
       </div>
-      <div><h4>Shop</h4><ul><li><a href="/pages/games.html">All games</a></li><li><a href="/pages/products.html">Leather products</a></li><li><a href="/pages/cart.html">Cart</a></li></ul></div>
+      <div><h4>Shop</h4><ul><li><a href="/pages/games.html">All games</a></li><li><a href="/pages/products.html">Leather products</a></li><li><a href="/pages/software.html">Software</a></li><li><a href="/pages/cart.html">Cart</a></li></ul></div>
       <div><h4>Account</h4><ul id="footerAccount"></ul></div>
       ${contact ? `<div><h4>Contact</h4><ul class="footer__contact">${contact}</ul></div>` : ''}
     </div>

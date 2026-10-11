@@ -32,17 +32,20 @@ export function gameCard(g) {
   </article>`;
 }
 
-export function productCard(p) {
-  const href = `/pages/product-details.html?id=${encodeURIComponent(p._id)}`;
+/** type: 'product' (leather) or 'software' — they are separate collections with separate pages. */
+export function productCard(p, rawType = 'product') {
+  // Always normalise: callers like `list.map(productCard)` pass the array index here by accident.
+  const type = rawType === 'software' ? 'software' : 'product';
+  const soft = type === 'software';
+  const href = `/pages/${soft ? 'software' : 'product'}-details.html?id=${encodeURIComponent(p._id)}`;
   const [a, b] = p.images || [];
   const media = a
     ? `<img class="card-img" src="${esc(cdn(a.url, 560))}" alt="${esc(p.title)}" loading="lazy" width="560" height="560">${b ? `<img class="card-img card-img--alt" src="${esc(cdn(b.url, 560))}" alt="" loading="lazy" width="560" height="560">` : ''}`
     : `<div class="card-img card-img--empty">${icon('bag', 36)}</div>`;
   const out = p.stock <= 0;
-  const attrs = `data-type="product" data-id="${esc(p._id)}" data-name="${esc(p.title)}" data-image="${esc(a?.url || '')}" data-price="${p.price}"`;
-  const short = p.shortDescription || truncate(stripHtml(p.description), 90);
+  const attrs = `data-type="${type}" data-id="${esc(p._id)}" data-name="${esc(p.title)}" data-image="${esc(a?.url || '')}" data-price="${p.price}"`;
   return `
-  <article class="card p-card">
+  <article class="card p-card${soft ? ' p-card--software' : ''}">
     <a class="card__media card__media--square" href="${href}" aria-label="${esc(p.title)}">${media}
       ${p.discountPercent > 0 ? `<span class="card__badge card__badge--sale">-${p.discountPercent}%</span>` : ''}
       ${out ? '<span class="card__badge card__badge--out">Sold out</span>' : ''}
@@ -50,7 +53,6 @@ export function productCard(p) {
     <div class="card__body">
       <p class="card__cat">${esc(p.category)}</p>
       <h3 class="card__title"><a href="${href}">${esc(p.title)}</a></h3>
-      <p class="card__desc">${esc(short)}</p>
       <div class="card__price">
         <strong>${formatPrice(p.price)}</strong>
         ${p.originalPrice && p.originalPrice > p.price ? `<s>${formatPrice(p.originalPrice)}</s>` : ''}
@@ -58,11 +60,13 @@ export function productCard(p) {
       ${!out && p.stock <= 5 ? `<p class="card__stock">Only ${p.stock} left</p>` : ''}
       <div class="card__actions">
         <a class="btn btn-sm btn-secondary" href="${href}">View details</a>
-        ${out ? '<button class="btn btn-sm btn-primary" disabled>Sold out</button>' : addBtn(attrs, 'btn-primary')}
+        ${out ? `<button class="btn btn-sm ${soft ? 'btn-soft' : 'btn-primary'}" disabled>Sold out</button>` : addBtn(attrs, soft ? 'btn-soft' : 'btn-primary')}
       </div>
     </div>
   </article>`;
 }
+
+export const softwareCard = (p) => productCard(p, 'software');
 
 /* ---------------------------- Placeholders ---------------------------- */
 export const skeletonCards = (n = 8, kind = 'game') =>

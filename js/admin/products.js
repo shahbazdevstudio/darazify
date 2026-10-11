@@ -4,6 +4,11 @@ import { confirmDialog } from '../ui.js';
 import { esc, formatPrice, debounce, cdn } from '../utils.js';
 import { errorState, renderPagination } from '../components.js';
 
+// The same script powers /admin/products.html (leather) and /admin/software.html (software).
+const KIND = document.body.dataset.kind === 'software' ? 'software' : 'leather';
+const SOFT = KIND === 'software';
+const BASE = SOFT ? 'software' : 'products'; // separate collections / endpoints
+const WORD = SOFT ? { one: 'software', title: 'Software', add: 'Add software' } : { one: 'product', title: 'Leather products', add: 'Add product' };
 let state = { search: '', category: '', page: 1 };
 let ctl = 0;
 let byId = {};
@@ -17,7 +22,7 @@ const row = (p) => `
     <td data-label="Stock"><span class="${p.stock === 0 ? 'is-out' : p.stock <= 5 ? 'is-low' : ''}">${p.stock === 0 ? 'Sold out' : p.stock}</span></td>
     <td data-label="Flags"><div class="tags">${flags(p) || '<span class="muted">—</span>'}</div></td>
     <td class="tbl__actions" data-label="Actions">
-      <a class="btn btn-sm btn-secondary" href="/admin/product-form.html?id=${p._id}">${icon('edit', 15)}<span>Edit</span></a>
+      <a class="btn btn-sm btn-secondary" href="/admin/product-form.html?id=${p._id}${SOFT ? '&kind=software' : ''}">${icon('edit', 15)}<span>Edit</span></a>
       <button class="icon-btn danger-icon" data-del="${p._id}" aria-label="Delete ${esc(p.title)}">${icon('trash', 18)}</button>
     </td>
   </tr>`;
@@ -27,12 +32,14 @@ async function load() {
   const box = document.getElementById('productsBox');
   box.innerHTML = skeletonRows(6, 5);
   try {
-    const { products, pagination } = await adminApi('/admin/products', { params: { search: state.search, category: state.category, page: state.page, limit: 10, sort: 'newest' } });
+    const data = await adminApi(`/admin/${BASE}`, { params: { search: state.search, category: state.category, page: state.page, limit: 10, sort: 'newest' } });
+    const products = data[BASE];
+    const { pagination } = data;
     if (my !== ctl) return;
     byId = Object.fromEntries(products.map((p) => [p._id, p]));
-    document.getElementById('count').textContent = `${pagination.total} product${pagination.total === 1 ? '' : 's'}`;
+    document.getElementById('count').textContent = `${pagination.total} ${WORD.one}${SOFT ? '' : pagination.total === 1 ? '' : 's'}`;
     if (!products.length) {
-      box.innerHTML = tableState('package', state.search || state.category ? 'No products match' : 'No products yet', state.search || state.category ? 'Try a different search or category.' : 'Add your first leather product to show it on the store.');
+      box.innerHTML = tableState(SOFT ? 'code' : 'package', state.search || state.category ? `No ${WORD.one} matches` : `No ${WORD.one} yet`, state.search || state.category ? 'Try a different search or category.' : `Add your first ${SOFT ? 'software' : 'leather product'} to show it on the store.`);
       document.getElementById('pager').innerHTML = '';
       return;
     }
@@ -40,13 +47,13 @@ async function load() {
     renderPagination(document.getElementById('pager'), pagination, (p) => { state.page = p; load(); });
   } catch (err) {
     if (my !== ctl) return;
-    box.innerHTML = errorState('Unable to load products');
+    box.innerHTML = errorState(`Unable to load ${WORD.one === 'software' ? 'software' : 'products'}`);
     box.querySelector('[data-retry]').addEventListener('click', load);
   }
 }
 
 (async () => {
-  const el = await mountAdmin({ active: 'products', title: 'Products', actions: `<a class="btn btn-primary btn-sm" href="/admin/product-form.html">${icon('plus', 16)}<span>Add product</span></a>` });
+  const el = await mountAdmin({ active: SOFT ? 'software' : 'products', title: WORD.title, actions: `<a class="btn btn-primary btn-sm" href="/admin/product-form.html${SOFT ? '?kind=software' : ''}">${icon('plus', 16)}<span>${WORD.add}</span></a>` });
   el.innerHTML = `
     <div class="toolbar-row">
       <div class="input-icon grow"><span>${icon('search', 18)}</span><input class="input" id="q" type="search" placeholder="Search by title or category" aria-label="Search products"></div>
@@ -58,7 +65,7 @@ async function load() {
 
   document.getElementById('q').addEventListener('input', debounce((e) => { state = { ...state, search: e.target.value.trim(), page: 1 }; load(); }, 350));
   document.getElementById('cat').addEventListener('change', (e) => { state = { ...state, category: e.target.value, page: 1 }; load(); });
-  adminApi('/products/categories').then(({ categories }) => {
+  adminApi(`/${BASE}/categories`).then(({ categories }) => {
     document.getElementById('cat').insertAdjacentHTML('beforeend', categories.map((c) => `<option>${esc(c.name)}</option>`).join(''));
   }).catch(() => {});
 
@@ -66,9 +73,9 @@ async function load() {
     const b = e.target.closest('[data-del]');
     if (!b) return;
     const p = byId[b.dataset.del];
-    const ok = await confirmDialog({ title: `Delete “${p?.title || 'product'}”?`, message: 'The product and its images are permanently removed. Past orders keep their own copy of the item.', confirmText: 'Delete product', danger: true });
+    const ok = await confirmDialog({ title: `Delete “${p?.title || WORD.one}”?`, message: 'The product and its images are permanently removed. Past orders keep their own copy of the item.', confirmText: `Delete ${WORD.one}`, danger: true });
     if (!ok) return;
-    try { await adminApi(`/products/${b.dataset.del}`, { method: 'DELETE' }); toast('Product deleted', 'success'); load(); } catch (err) { toast(err.message, 'error'); }
+    try { await adminApi(`/${BASE}/${b.dataset.del}`, { method: 'DELETE' }); toast(`${SOFT ? 'Software' : 'Product'} deleted`, 'success'); load(); } catch (err) { toast(err.message, 'error'); }
   });
   await load();
 })();

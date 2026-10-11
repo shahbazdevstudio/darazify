@@ -1,4 +1,4 @@
-import { api } from '../api.js';
+import { api, setToken } from '../api.js';
 import { initTheme, toggleTheme, toast } from '../ui.js';
 import { icon } from '../icons.js';
 import { esc } from '../utils.js';
@@ -18,7 +18,9 @@ export async function adminApi(path, opts) {
 const NAV = [
   { id: 'dashboard', href: '/admin/index.html', label: 'Dashboard', icon: 'dashboard' },
   { id: 'orders', href: '/admin/orders.html', label: 'Orders', icon: 'receipt' },
-  { id: 'products', href: '/admin/products.html', label: 'Products', icon: 'package' },
+  { id: 'products', href: '/admin/products.html', label: 'Leather products', icon: 'package' },
+  { id: 'games', href: '/admin/games.html', label: 'Games', icon: 'gamepad' },
+  { id: 'software', href: '/admin/software.html', label: 'Software', icon: 'code' },
   { id: 'users', href: '/admin/users.html', label: 'Users', icon: 'users' },
 ];
 
@@ -35,6 +37,7 @@ export async function mountAdmin({ active, title, actions = '' }) {
   try {
     admin = (await api('/auth/admin/me')).user;
   } catch {
+    setToken(null, 'admin');
     window.location.replace('/admin/login.html');
     return new Promise(() => {});
   }
@@ -74,7 +77,7 @@ export async function mountAdmin({ active, title, actions = '' }) {
   overlay.addEventListener('click', () => setSide(false));
 
   document.getElementById('admLogout').addEventListener('click', async () => {
-    try { await api('/auth/admin/logout', { method: 'POST' }); } finally { window.location.href = '/admin/login.html'; }
+    try { await api('/auth/admin/logout', { method: 'POST' }); } finally { setToken(null, 'admin'); window.location.href = '/admin/login.html'; }
   });
 
   return document.getElementById('admContent');

@@ -11,6 +11,8 @@ const MAX_MB = 5;
 const OK_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/avif'];
 
 const editId = getParams().get('id');
+const kind = getParams().get('kind') === 'software' ? 'software' : 'leather';
+const BASE = kind === 'software' ? 'software' : 'products'; // separate collections / endpoints
 let existing = [];   // { url, publicId, remove }
 let fresh = [];      // { file, url }
 let editor;
@@ -83,13 +85,16 @@ function validate(form, f) {
 }
 
 (async () => {
-  const el = await mountAdmin({ active: 'products', title: editId ? 'Edit product' : 'Add product', actions: '<a class="btn btn-secondary btn-sm" href="/admin/products.html">Back to products</a>' });
-
   let product = null;
+  const SOFT = kind === 'software';
+  const LIST = SOFT ? '/admin/software.html' : '/admin/products.html';
+  const NOUN = SOFT ? 'software' : 'product';
+  const el = await mountAdmin({ active: SOFT ? 'software' : 'products', title: `${editId ? 'Edit' : 'Add'} ${NOUN}`, actions: `<a class="btn btn-secondary btn-sm" href="${LIST}">Back to ${SOFT ? 'software' : 'products'}</a>` });
+
   if (editId) {
     el.innerHTML = '<div class="skeleton" style="height:480px;border-radius:20px"></div>';
-    try { product = (await adminApi(`/admin/products/${editId}`)).product; } catch (err) {
-      el.innerHTML = errorState(err.status === 404 ? 'Product not found' : 'Unable to load this product');
+    try { const d = await adminApi(`/admin/${BASE}/${editId}`); product = d.product || d.software; } catch (err) {
+      el.innerHTML = errorState(err.status === 404 ? 'Not found' : 'Unable to load this item');
       el.querySelector('[data-retry]')?.addEventListener('click', () => window.location.reload());
       return;
     }
@@ -102,9 +107,9 @@ function validate(form, f) {
     <div class="pform__main">
       <section class="card-box"><header><h2>Basics</h2></header>
         <div class="form-stack">
-          <div class="field"><label for="title">Title</label><input class="input" id="title" name="title" maxlength="140" value="${esc(p.title || '')}" placeholder="e.g. Full-grain bifold wallet"></div>
-          <div class="field"><label for="category">Category</label><input class="input" id="category" name="category" list="catList" maxlength="40" value="${esc(p.category || '')}" placeholder="Wallets, Bags, Belts…"><datalist id="catList"></datalist></div>
-          <div class="field"><label for="shortDescription">Short description <span class="muted">(shown on cards)</span></label><input class="input" id="shortDescription" name="shortDescription" maxlength="220" value="${esc(p.shortDescription || '')}" placeholder="One line that sells the product"></div>
+          <div class="field"><label for="title">Title</label><input class="input" id="title" name="title" maxlength="140" value="${esc(p.title || '')}" placeholder="${SOFT ? 'e.g. Adobe Photoshop 2025' : 'e.g. Full-grain bifold wallet'}"></div>
+          <div class="field"><label for="category">Category</label><input class="input" id="category" name="category" list="catList" maxlength="40" value="${esc(p.category || '')}" placeholder="${SOFT ? 'Antivirus, Design, Office…' : 'Wallets, Bags, Belts…'}"><datalist id="catList"></datalist></div>
+          <div class="field"><label for="shortDescription">Short description <span class="muted">(shown on cards)</span></label><input class="input" id="shortDescription" name="shortDescription" maxlength="220" value="${esc(p.shortDescription || '')}" placeholder="One line that sells the ${NOUN}"></div>
           <div class="field"><label>Description</label><div id="editor"></div></div>
         </div>
       </section>
@@ -124,16 +129,16 @@ function validate(form, f) {
         </div>
       </section>
       <section class="card-box"><header><h2>Inventory</h2></header>
-        <div class="form-stack"><div class="field"><label for="stock">Stock</label><input class="input" id="stock" name="stock" type="number" min="0" step="1" inputmode="numeric" value="${p.stock ?? 0}"></div></div>
+        <div class="form-stack"><div class="field"><label for="stock">${SOFT ? 'Available copies' : 'Stock'}</label><input class="input" id="stock" name="stock" type="number" min="0" step="1" inputmode="numeric" value="${p.stock ?? (SOFT ? 999 : 0)}"></div></div>
       </section>
       <section class="card-box"><header><h2>Visibility</h2></header>
         <div class="form-stack">
-          ${[['isActive', 'Visible in store', 'Hidden products stay in admin only', p.isActive !== false], ['featured', 'Featured', 'Shown in “Featured leather” on the home page', !!p.featured], ['popular', 'Popular', 'Marks the product as a popular pick', !!p.popular]].map(([n, l, h, on]) => `<label class="switch"><input type="checkbox" name="${n}" ${on ? 'checked' : ''}><i></i><span><b>${l}</b><small>${h}</small></span></label>`).join('')}
+          ${[['isActive', 'Visible in store', 'Hidden products stay in admin only', p.isActive !== false], ['featured', 'Featured', SOFT ? 'Marks the software as a highlighted pick' : 'Shown in “Featured leather” on the home page', !!p.featured], ['popular', 'Popular', `Marks the ${NOUN} as a popular pick`, !!p.popular]].map(([n, l, h, on]) => `<label class="switch"><input type="checkbox" name="${n}" ${on ? 'checked' : ''}><i></i><span><b>${l}</b><small>${h}</small></span></label>`).join('')}
         </div>
       </section>
       <div class="pform__actions">
-        <button class="btn btn-lg btn-primary btn-block" type="submit" id="saveBtn">${editId ? 'Save changes' : 'Create product'}</button>
-        <a class="btn btn-secondary btn-block" href="/admin/products.html">Cancel</a>
+        <button class="btn btn-lg btn-primary btn-block" type="submit" id="saveBtn">${editId ? 'Save changes' : `Create ${NOUN}`}</button>
+        <a class="btn btn-secondary btn-block" href="${LIST}">Cancel</a>
       </div>
     </aside>
   </form>`;
@@ -144,7 +149,7 @@ function validate(form, f) {
   bindPricing(f);
   renderImages();
 
-  adminApi('/products/categories').then(({ categories }) => {
+  adminApi(`/${BASE}/categories`).then(({ categories }) => {
     document.getElementById('catList').innerHTML = categories.map((c) => `<option value="${esc(c.name)}">`).join('');
   }).catch(() => {});
 
@@ -185,9 +190,9 @@ function validate(form, f) {
     const btn = document.getElementById('saveBtn');
     setBusy(btn, true, fresh.length ? 'Uploading images…' : 'Saving…');
     try {
-      await adminApi(editId ? `/products/${editId}` : '/products', { method: editId ? 'PUT' : 'POST', body: fd });
-      toast(editId ? 'Product updated' : 'Product created', 'success');
-      setTimeout(() => { window.location.href = '/admin/products.html'; }, 600);
+      await adminApi(editId ? `/${BASE}/${editId}` : `/${BASE}`, { method: editId ? 'PUT' : 'POST', body: fd });
+      toast(`${SOFT ? 'Software' : 'Product'} ${editId ? 'updated' : 'created'}`, 'success');
+      setTimeout(() => { window.location.href = LIST; }, 600);
     } catch (err) {
       setBusy(btn, false);
       if (!applyServerErrors(form, err)) formAlert(form, err.message);

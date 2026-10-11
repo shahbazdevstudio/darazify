@@ -123,6 +123,7 @@ const submitter = (form, run, okMsg) => form.addEventListener('submit', async (e
     try {
       await api('/users/me', { method: 'DELETE', body: { password: pw } });
       localStorage.removeItem('dz_session_hint');
+      localStorage.removeItem('dz_token');
       Auth.setUser(null);
       await Cart.sync();
       toast('Your account has been deleted', 'success');

@@ -11,7 +11,8 @@ const root = document.getElementById('cartRoot');
 const thumb = (i) => (i.image
   ? `<img src="${esc(i.itemType === 'game' ? gameImg(i.image, 200) : cdn(i.image, 200))}" alt="" loading="lazy">`
   : icon(i.itemType === 'game' ? 'gamepad' : 'bag', 28));
-const href = (i) => (i.itemType === 'game' ? `/pages/game-details.html?id=${encodeURIComponent(i.itemId)}` : `/pages/product-details.html?id=${encodeURIComponent(i.itemId)}`);
+const PAGES = { game: 'game', software: 'software', product: 'product' };
+const href = (i) => `/pages/${PAGES[i.itemType] || 'product'}-details.html?id=${encodeURIComponent(i.itemId)}`;
 
 function render() {
   const { items, count, subtotal } = Cart.summary();
@@ -30,7 +31,7 @@ function render() {
           <article class="cart-row" data-type="${i.itemType}" data-id="${esc(i.itemId)}">
             <a class="cart-row__img" href="${href(i)}">${thumb(i)}</a>
             <div class="cart-row__info">
-              <span class="chip chip--sm">${i.itemType === 'game' ? 'Game' : 'Leather'}</span>
+              <span class="chip chip--sm">${{ game: 'Game', software: 'Software' }[i.itemType] || 'Leather'}</span>
               <h3><a href="${href(i)}">${esc(i.name)}</a></h3>
               <p>${formatPrice(i.price)} each</p>
             </div>

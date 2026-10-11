@@ -1,4 +1,4 @@
-import { api } from '../api.js';
+import { api, setToken } from '../api.js';
 import { initTheme, setBusy } from '../ui.js';
 import { rules, validate, formAlert, applyServerErrors, bindPasswordToggles } from '../forms.js';
 import { icon } from '../icons.js';
@@ -18,7 +18,8 @@ form.addEventListener('submit', async (e) => {
   const btn = form.querySelector('[type="submit"]');
   setBusy(btn, true, 'Signing in…');
   try {
-    await api('/auth/admin/login', { method: 'POST', body: { email: f.email.value.trim(), password: f.password.value } });
+    const data = await api('/auth/admin/login', { method: 'POST', body: { email: f.email.value.trim(), password: f.password.value } });
+    setToken(data.token, 'admin');
     window.location.href = '/admin/index.html';
   } catch (err) {
     setBusy(btn, false);

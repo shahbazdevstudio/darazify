@@ -20,6 +20,9 @@
   --signal: #6f5ff2;          /* violet: games */
   --signal-hover: #8576ff;
   --signal-soft: rgba(133, 118, 255, .18);
+  --soft: #2fb5a8;            /* teal: software */
+  --soft-hover: #45c9bc;
+  --soft-soft: rgba(47, 181, 168, .16);
   --thread: #e4c88f;          /* gold stitching */
   --ok: #63c48f;
   --danger: #e5604f;
@@ -54,6 +57,9 @@
   --signal: #5a4ee0;
   --signal-hover: #4a3fc9;
   --signal-soft: rgba(90, 78, 224, .12);
+  --soft: #12857a;
+  --soft-hover: #0e6f66;
+  --soft-soft: rgba(18, 133, 122, .12);
   --thread: #a8814a;
   --brand-stitch: #e4c88f;
   --brand-letter: #f3ece1;
@@ -101,15 +107,17 @@ ul { list-style: none; margin: 0; padding: 0; }
 .btn-block { width: 100%; }
 
 /* Primary buttons carry a saddle-stitch seam: the one recurring leather detail */
-.btn-primary, .btn-signal, .btn-danger { color: #fff; }
-.btn-primary::after, .btn-signal::after, .btn-danger::after {
+.btn-primary, .btn-signal, .btn-danger, .btn-soft { color: #fff; }
+.btn-primary::after, .btn-signal::after, .btn-danger::after, .btn-soft::after {
   content: ''; position: absolute; inset: 3.5px; border-radius: 8px; border: 1px dashed rgba(255, 255, 255, .38); pointer-events: none;
 }
-.btn-sm.btn-primary::after, .btn-sm.btn-signal::after { inset: 3px; border-radius: 7px; }
+.btn-sm.btn-primary::after, .btn-sm.btn-signal::after, .btn-sm.btn-soft::after { inset: 3px; border-radius: 7px; }
 .btn-primary { background: var(--accent); box-shadow: 0 10px 22px -12px var(--accent); }
 .btn-primary:hover:not([disabled]) { background: var(--accent-hover); }
 .btn-signal { background: var(--signal); box-shadow: 0 10px 22px -12px var(--signal); }
 .btn-signal:hover:not([disabled]) { background: var(--signal-hover); }
+.btn-soft { background: var(--soft); box-shadow: 0 10px 22px -12px var(--soft); }
+.btn-soft:hover:not([disabled]) { background: var(--soft-hover); }
 .btn-danger { background: var(--danger); }
 .btn-danger:hover:not([disabled]) { filter: brightness(1.08); }
 .btn-secondary { background: var(--surface-2); border-color: var(--line); color: var(--text); }

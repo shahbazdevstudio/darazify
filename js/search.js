@@ -20,17 +20,19 @@ export function initSearch(root) {
       <span class="sug__text"><strong>${esc(title)}</strong><small>${esc(sub)}</small></span>
     </a>`;
 
-  const render = (q, { games, products }) => {
-    if (!games.length && !products.length) {
-      panel.innerHTML = `<div class="sug-empty">${icon('search', 22)}<p>No games or products match “${esc(q)}”.</p><small>Try a shorter name or check the spelling.</small></div>`;
+  const render = (q, { games = [], products = [], software = [] }) => {
+    if (!games.length && !products.length && !software.length) {
+      panel.innerHTML = `<div class="sug-empty">${icon('search', 22)}<p>Nothing matches “${esc(q)}”.</p><small>Try a shorter name or check the spelling.</small></div>`;
       return;
     }
     panel.innerHTML = `
       ${games.length ? `<div class="sug-group"><h4>Games</h4>${games.map((g) => row(`/pages/game-details.html?id=${encodeURIComponent(g.id)}`, g.image && gameImg(g.image, 80), g.name, `${formatPrice(g.price)}${g.rating ? ` · ${Number(g.rating).toFixed(1)} rating` : ''}`)).join('')}</div>` : ''}
       ${products.length ? `<div class="sug-group"><h4>Leather products</h4>${products.map((p) => row(`/pages/product-details.html?id=${p._id}`, p.images?.[0] && cdn(p.images[0].url, 80), p.title, `${formatPrice(p.price)} · ${p.category}`)).join('')}</div>` : ''}
+      ${software.length ? `<div class="sug-group"><h4>Software</h4>${software.map((p) => row(`/pages/software-details.html?id=${p._id}`, p.images?.[0] && cdn(p.images[0].url, 80), p.title, `${formatPrice(p.price)} · ${p.category}`)).join('')}</div>` : ''}
       <div class="sug-all">
         <a role="option" href="/pages/games.html?q=${encodeURIComponent(q)}">All games for “${esc(q)}”</a>
-        <a role="option" href="/pages/products.html?q=${encodeURIComponent(q)}">All products for “${esc(q)}”</a>
+        <a role="option" href="/pages/products.html?q=${encodeURIComponent(q)}">All leather for “${esc(q)}”</a>
+        <a role="option" href="/pages/software.html?q=${encodeURIComponent(q)}">All software for “${esc(q)}”</a>
       </div>`;
   };
 

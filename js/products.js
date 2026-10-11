@@ -1,10 +1,16 @@
 import { api, isAbort } from './api.js';
 import { mountLayout } from './layout.js';
-import { productCard, skeletonCards, emptyState, errorState, renderPagination } from './components.js';
+import { productCard, softwareCard, skeletonCards, emptyState, errorState, renderPagination } from './components.js';
 import { getParams, setParams, debounce, esc } from './utils.js';
 import { PAGE_SIZE } from './config.js';
 
 mountLayout();
+
+// The same script powers /pages/products.html (leather) and /pages/software.html (software).
+const KIND = document.body.dataset.kind === 'software' ? 'software' : 'leather';
+const API = KIND === 'software' ? '/software' : '/products'; // separate collections / endpoints
+const CARD = (item) => (KIND === 'software' ? softwareCard(item) : productCard(item));
+const LABEL = KIND === 'software' ? { one: 'software', none: 'No software found', empty: 'No software yet', soon: 'New software will appear here soon.', fail: 'Unable to load software' } : { one: 'product', none: 'No products found', empty: 'No products yet', soon: 'New leather pieces will appear here soon.', fail: 'Unable to load products' };
 
 const $ = (s) => document.querySelector(s);
 const els = { grid: $('#productsGrid'), pager: $('#pager'), q: $('#fSearch'), sort: $('#fSort'), cats: $('#catChips'), count: $('#resultCount'), clear: $('#clearFilters') };
@@ -36,28 +42,30 @@ async function load({ scroll = false } = {}) {
   if (scroll) window.scrollTo({ top: $('#results').offsetTop - 110, behavior: 'smooth' });
 
   try {
-    const { products, pagination } = await api('/products', {
+    const data = await api(API, {
       params: { search: state.q, category: state.category, sort: state.sort || 'newest', page: state.page, limit: PAGE_SIZE.products },
       signal: controller.signal,
     });
+    const products = data[KIND === 'software' ? 'software' : 'products'];
+    const { pagination } = data;
     if (!products.length) {
       els.count.textContent = 'No results';
       const filtered = state.q || state.category;
       els.grid.innerHTML = emptyState({
-        iconName: 'bag', title: filtered ? 'No products found' : 'No products yet',
-        text: filtered ? 'Try another search or clear the filters.' : 'New leather pieces will appear here soon.',
+        iconName: KIND === 'software' ? 'code' : 'bag', title: filtered ? LABEL.none : LABEL.empty,
+        text: filtered ? 'Try another search or clear the filters.' : LABEL.soon,
         actions: filtered ? '<button class="btn btn-primary" data-clear>Clear filters</button>' : '<a class="btn btn-primary" href="/pages/games.html">Explore games</a>',
       });
       els.grid.querySelector('[data-clear]')?.addEventListener('click', clearAll);
       return;
     }
-    els.count.textContent = `${pagination.total} product${pagination.total === 1 ? '' : 's'}${pagination.totalPages > 1 ? ` · page ${pagination.page} of ${pagination.totalPages}` : ''}`;
-    els.grid.innerHTML = products.map(productCard).join('');
+    els.count.textContent = `${pagination.total} ${LABEL.one}${KIND === 'software' ? '' : pagination.total === 1 ? '' : 's'}${pagination.totalPages > 1 ? ` · page ${pagination.page} of ${pagination.totalPages}` : ''}`;
+    els.grid.innerHTML = products.map(CARD).join('');
     renderPagination(els.pager, pagination, (page) => { state.page = page; push(); load({ scroll: true }); });
   } catch (err) {
     if (isAbort(err)) return;
     els.count.textContent = '';
-    els.grid.innerHTML = errorState('Unable to load products');
+    els.grid.innerHTML = errorState(LABEL.fail);
     els.grid.querySelector('[data-retry]').addEventListener('click', () => load());
   } finally {
     els.grid.removeAttribute('aria-busy');
@@ -77,7 +85,7 @@ els.cats.addEventListener('click', (e) => {
 });
 window.addEventListener('popstate', () => { state = readState(); syncControls(); load(); });
 
-api('/products/categories').then(({ categories }) => {
+api(`${API}/categories`).then(({ categories }) => {
   els.cats.insertAdjacentHTML('beforeend', categories.map((c) => `<button class="chip chip--btn" data-cat="${esc(c.name)}" aria-pressed="false">${esc(c.name)} <small>${c.count}</small></button>`).join(''));
   syncControls();
 }).catch(() => {});

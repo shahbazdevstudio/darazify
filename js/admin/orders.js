@@ -59,7 +59,7 @@ async function showOrder(idOrOrderId) {
           ${o.user ? `<div class="full"><dt>Account</dt><dd>${esc(o.user.name)}${o.user.isBlocked ? ' <span class="status status--cancelled">Blocked</span>' : ''}</dd></div>` : '<div class="full"><dt>Account</dt><dd class="muted">Deleted account</dd></div>'}
         </dl>
         <h4 class="sheet-h">Items</h4>
-        <ul class="sheet-list sheet-list--items">${o.items.map((i) => `<li><span class="thumb-sm">${thumb(i)}</span><div><strong>${esc(i.name)}</strong><small>${i.itemType === 'game' ? 'Game' : 'Leather'} · ${formatPrice(i.price)} × ${i.quantity}</small></div><b>${formatPrice(i.price * i.quantity)}</b></li>`).join('')}</ul>
+        <ul class="sheet-list sheet-list--items">${o.items.map((i) => `<li><span class="thumb-sm">${thumb(i)}</span><div><strong>${esc(i.name)}</strong><small>${{ game: 'Game', software: 'Software' }[i.itemType] || 'Leather'} · ${formatPrice(i.price)} × ${i.quantity}</small></div><b>${formatPrice(i.price * i.quantity)}</b></li>`).join('')}</ul>
         <div class="sheet-total"><span>Total</span><strong>${formatPrice(o.total)}</strong></div>
         <h4 class="sheet-h">History</h4>
         <ol class="history">${(o.statusHistory || []).slice().reverse().map((h) => `<li>${statusBadge(h.status)}<small>${formatDateTime(h.at)}</small></li>`).join('')}</ol>

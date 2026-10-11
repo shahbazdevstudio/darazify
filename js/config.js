@@ -1,8 +1,13 @@
-export const API_BASE_URL =
-  window.DARAZIFY_API_URL ||
-  'https://darazify-backend.vercel.app/api';
+/**
+ * Central frontend configuration.
+ *
+ * The site always talks to the production API below (also when the frontend itself is opened on
+ * localhost). To point it somewhere else for a test, set window.DARAZIFY_API_URL before the
+ * modules load, or edit API_BASE_URL.
+ */
+export const API_BASE_URL = window.DARAZIFY_API_URL || 'https://darazify-backend.vercel.app/api';
 
-export const GAMES_API_URL = `${ API_BASE_URL }/games`;
+export const GAMES_API_URL = `${API_BASE_URL}/games`;
 
 export const GAME_PRICE = 250;
 
