@@ -31,7 +31,7 @@ const headerHTML = () => `
     <div class="container nav__bar">
       <button class="icon-btn nav__burger" id="navOpen" aria-label="Open menu" aria-expanded="false" aria-controls="drawer">${icon('menu', 22)}</button>
       <a class="brand" href="/index.html" aria-label="Darazify home">
-        <span class="brand__mark" aria-hidden="true"><svg viewBox="0 0 32 32" width="30" height="30"><rect x="1.5" y="1.5" width="29" height="29" rx="9" fill="currentColor"/><rect x="5.5" y="5.5" width="21" height="21" rx="6" fill="none" stroke="var(--brand-stitch)" stroke-width="1.4" stroke-dasharray="2.6 2.2"/><path d="M11.5 9.5h4.6c4.3 0 6.4 2.7 6.4 6.5s-2.1 6.5-6.4 6.5h-4.6z" fill="var(--brand-letter)"/></svg></span>
+        <img class="brand__logo" src="/assets/logo.webp" alt="" width="75" height="49">
         <span class="brand__name">Daraz<span>ify</span></span>
       </a>
       <div class="nav__search nav__search--desktop">${searchHTML('navSearch')}</div>
@@ -50,7 +50,7 @@ const headerHTML = () => `
   <div class="drawer-overlay" id="drawerOverlay" hidden></div>
   <aside class="drawer" id="drawer" aria-label="Menu" aria-hidden="true">
     <div class="drawer__head">
-      <span class="brand__name">Daraz<span>ify</span></span>
+      <img class="brand__logo" src="/assets/logo.webp" alt="" width="60" height="39"><span class="brand__name">Daraz<span>ify</span></span>
       <button class="icon-btn" id="navClose" aria-label="Close menu">${icon('x', 22)}</button>
     </div>
     <nav class="drawer__links">
@@ -67,14 +67,14 @@ const footerHTML = () => {
     SITE.phone && `<li>${icon('phone', 16)}<a href="tel:${esc(SITE.phone.replace(/\s/g, ''))}">${esc(SITE.phone)}</a></li>`,
     SITE.whatsapp && `<li>${icon('chat', 16)}<a href="https://wa.me/${esc(SITE.whatsapp.replace(/\D/g, ''))}" target="_blank" rel="noopener">WhatsApp us</a></li>`,
   ].filter(Boolean).join('');
-  const socials = Object.entries(SITE.social).filter(([, v]) => v)
-    .map(([k, v]) => `<a href="${esc(v)}" target="_blank" rel="noopener" class="chip">${k[0].toUpperCase() + k.slice(1)}</a>`).join('');
+  const socials = [...(SITE.channel.url ? [['channel', SITE.channel.url, SITE.channel.label]] : []), ...Object.entries(SITE.social).filter(([, v]) => v).map(([k, v]) => [k, v, k[0].toUpperCase() + k.slice(1)])]
+    .map(([k, v, label]) => `<a href="${esc(v)}" target="_blank" rel="noopener" class="chip chip--channel-${k}">${esc(label)}</a>`).join('');
 
   return `
   <footer class="footer">
     <div class="container footer__grid">
       <div class="footer__brand">
-        <a class="brand" href="/index.html"><span class="brand__name">Daraz<span>ify</span></span></a>
+        <a class="brand footer__logo" href="/index.html" aria-label="Darazify home"><img src="/assets/logo-lg.webp" alt="Darazify.site" width="220" height="144" loading="lazy"></a>
         <p>Leather goods made to be carried daily, PC games at one simple price, and useful software. Order them in a single cart and the seller confirms by phone.</p>
         ${socials ? `<div class="footer__social">${socials}</div>` : ''}
       </div>

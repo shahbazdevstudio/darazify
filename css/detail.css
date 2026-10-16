@@ -4,20 +4,20 @@
 .crumbs a:hover { color: var(--thread); }
 .crumbs [aria-current] { color: var(--text-2); }
 
-.detail { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: clamp(1.5rem, 4vw, 3.5rem); align-items: start; }
+.detail { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: clamp(1.5rem, 4vw, 3.5rem); align-items: start; }
 .detail__skel-media { aspect-ratio: 16 / 10; border-radius: var(--r-lg); }
-.gallery { position: sticky; top: calc(var(--nav-h) + 1.2rem); }
-.gallery__main { position: relative; overflow: hidden; border-radius: var(--r-lg); background: var(--surface-2); border: 1px solid var(--line); aspect-ratio: 16 / 10; }
-.gallery__main--square { aspect-ratio: 1; }
+.gallery { max-width: 620px; width: 100%; position: sticky; top: calc(var(--nav-h) + 1.2rem); }
+.gallery__main { position: relative; overflow: hidden; border-radius: var(--r-lg); background: var(--surface-2); border: 1px solid var(--line); aspect-ratio: 16 / 9; }
+.gallery__main--square { aspect-ratio: 16 / 9; }
 .gallery__main--zoom { cursor: zoom-in; }
-.gallery__main img { width: 100%; height: 100%; object-fit: cover; transition: transform .35s var(--ease); }
+.gallery__main img { width: 100%; height: 100%; object-fit: contain; transition: transform .35s var(--ease); }
 .gallery__main--zoom:hover img { transform: scale(1.8); }
 .gallery__empty { height: 100%; }
 .gallery__nav { position: absolute; top: 50%; transform: translateY(-50%); width: 42px; height: 42px; border-radius: 50%; border: 1px solid var(--line-strong); background: color-mix(in srgb, var(--bg) 80%, transparent); backdrop-filter: blur(6px); display: grid; place-items: center; z-index: 3; opacity: 0; transition: opacity .2s; }
 .gallery__main:hover .gallery__nav, .gallery__nav:focus-visible { opacity: 1; }
 .gallery__nav--prev { left: .8rem; } .gallery__nav--next { right: .8rem; }
 .gallery__thumbs { display: flex; gap: .6rem; margin-top: .8rem; overflow-x: auto; padding: 2px; scrollbar-width: thin; }
-.thumb { flex: 0 0 82px; height: 64px; padding: 0; border-radius: 12px; overflow: hidden; border: 2px solid transparent; background: var(--surface-2); opacity: .7; transition: all .2s; }
+.thumb { flex: 0 0 96px; height: 54px; padding: 0; border-radius: 12px; overflow: hidden; border: 2px solid transparent; background: var(--surface-2); opacity: .7; transition: all .2s; }
 .thumb img { width: 100%; height: 100%; object-fit: cover; }
 .thumb:hover { opacity: 1; }
 .thumb.is-on { border-color: var(--thread); opacity: 1; }
@@ -67,9 +67,4 @@
 @media (max-width: 900px) { .detail { grid-template-columns: 1fr; } .gallery { position: static; } .gallery__nav { opacity: 1; } .gallery__main--zoom:hover img { transform: none; } }
 @media (max-width: 480px) { .facts { grid-template-columns: 1fr; } .detail__buy { padding: 1rem; } }
 
-/* Game detail: YouTube-style 16:9 gallery, wider column, no zoom (zoom is leather-only) */
-.detail--game { grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); }
-.detail--game .gallery__main { aspect-ratio: 16 / 9; }
-.detail--game .gallery__main img { object-fit: contain; background: var(--surface-2); }
-.detail--game .thumb { flex: 0 0 128px; height: 72px; }
-@media (max-width: 900px) { .detail--game { grid-template-columns: 1fr; } }
+/* Every gallery (leather, software, games) uses the same video-shaped 16:9 size; zoom stays leather-only */

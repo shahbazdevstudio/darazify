@@ -10,3 +10,6 @@
 .footer__bottom { display: flex; justify-content: space-between; gap: 1rem; flex-wrap: wrap; padding-block: 1.4rem 2rem; border-top: 1px dashed var(--line); color: var(--text-3); font-size: .88rem; }
 @media (max-width: 900px) { .footer__grid { grid-template-columns: 1fr 1fr; } .footer__brand { grid-column: 1 / -1; } }
 @media (max-width: 480px) { .footer__grid { grid-template-columns: 1fr; gap: 2rem; } }
+
+.footer__logo img { width: min(220px, 60vw); height: auto; display: block; filter: drop-shadow(0 4px 14px rgba(0,0,0,.35)); }
+.footer__social { flex-wrap: wrap; }

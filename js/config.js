@@ -26,6 +26,9 @@ export const SITE = {
   phone: '+92 305 7152387',
   whatsapp: '+92 305 7152387',
 
+  // Channel link shown in the footer. Paste the URL here; it stays hidden while empty.
+  channel: { url: '', label: 'Join our channel' },
+
   social: {
     instagram: '',
     facebook: '',

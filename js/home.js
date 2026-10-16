@@ -81,9 +81,8 @@ document.querySelectorAll('[data-rail-btn]').forEach((b) => b.addEventListener('
 
 /* ------------------------------ Game series ------------------------------ */
 const seriesCard = (s) => `
-  <a class="scard" href="/pages/games.html?series=${encodeURIComponent(s.slug)}" aria-label="${esc(s.name)} series, ${s.count} game${s.count === 1 ? '' : 's'}">
-    <span class="scard__logo"><img src="${esc(cdn(s.image, 480))}" alt="" loading="lazy"></span>
-    <span class="scard__name">${esc(s.name)}</span><span class="scard__count">${s.count} game${s.count === 1 ? '' : 's'}</span>
+  <a class="scard" href="/pages/games.html?series=${encodeURIComponent(s.slug)}" aria-label="${esc(s.name)} series" title="${esc(s.name)}">
+    <img src="${esc(cdn(s.image, 400))}" alt="${esc(s.name)}" loading="lazy">
   </a>`;
 
 // Row 1 drifts left to right, row 2 right to left. The set is doubled for a seamless loop.

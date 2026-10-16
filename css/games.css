@@ -19,16 +19,3 @@
 @media (max-width: 820px) { .toolbar, .toolbar--products { grid-template-columns: 1fr 1fr; } .toolbar .field:first-child { grid-column: 1 / -1; } }
 @media (max-width: 480px) { .toolbar, .toolbar--products { grid-template-columns: 1fr; padding: .9rem; } }
 
-/* Request a game */
-.request { display: grid; grid-template-columns: minmax(0, .8fr) minmax(0, 1.2fr); gap: clamp(1.4rem, 4vw, 3rem); margin-top: clamp(2.5rem, 6vw, 4.5rem); padding: clamp(1.4rem, 4vw, 2.4rem); background: var(--surface); border: 1px solid var(--line); border-radius: 24px; position: relative; overflow: hidden; }
-.request::before { content: ''; position: absolute; inset: 0 0 auto 0; height: 5px; background: var(--signal); }
-.request__icon { display: inline-grid; place-items: center; width: 52px; height: 52px; border-radius: 16px; background: var(--signal-soft); color: var(--signal-hover); margin-bottom: 1rem; }
-.request__intro h2 { font-size: clamp(1.5rem, 3vw, 2.1rem); letter-spacing: -.03em; }
-.request__intro p { color: var(--text-2); margin-top: .7rem; max-width: 40ch; }
-.request__form { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; align-content: start; }
-.request__form .form-alert, .request__form button[type="submit"], .request__done { grid-column: 1 / -1; }
-.request__trap { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; }
-.request__done { display: grid; justify-items: start; gap: .5rem; padding: 1rem 0; color: var(--ok); }
-.request__done h3 { color: var(--text); } .request__done p { color: var(--text-2); } .request__done b { color: var(--text); }
-@media (max-width: 820px) { .request { grid-template-columns: 1fr; } }
-@media (max-width: 560px) { .request__form { grid-template-columns: 1fr; } .request { border-radius: 18px; } }
