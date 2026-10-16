@@ -11,6 +11,14 @@ const id = getParams().get('id');
 
 const skeleton = `<div class="detail"><div class="skeleton detail__skel-media"></div><div class="detail__info"><div class="skeleton sk-line w60" style="height:34px"></div><div class="skeleton sk-line w40"></div><div class="skeleton sk-line w100" style="height:120px"></div></div></div>`;
 
+// RAWG's resize endpoint only serves certain widths, so 1000px failed for the first image: use the original file.
+const big = (u) => u;
+const mainFallback = (img, original) => {
+  img.addEventListener('error', () => {
+    if (img.dataset.tried !== '1' && gameImg(original, 640) !== img.src) { img.dataset.tried = '1'; img.src = gameImg(original, 640); }
+  });
+};
+
 const fact = (label, value) => (value && value.length ? `<div><dt>${label}</dt><dd>${esc(Array.isArray(value) ? value.join(', ') : value)}</dd></div>` : '');
 
 function render(g) {
@@ -20,10 +28,10 @@ function render(g) {
 
   root.innerHTML = `
     <nav class="crumbs" aria-label="Breadcrumb"><a href="/index.html">Home</a><span>/</span><a href="/pages/games.html">Games</a><span>/</span><span aria-current="page">${esc(g.name)}</span></nav>
-    <div class="detail">
+    <div class="detail detail--game">
       <div class="gallery">
-        <div class="gallery__main">${shots.length ? `<img id="mainImg" src="${esc(gameImg(shots[0], 1000))}" alt="${esc(g.name)}" width="1000" height="600">` : `<div class="card-img--empty gallery__empty">${icon('gamepad', 64)}</div>`}</div>
-        ${shots.length > 1 ? `<div class="gallery__thumbs" role="list">${shots.map((s, i) => `<button class="thumb ${i === 0 ? 'is-on' : ''}" data-src="${esc(gameImg(s, 1000))}" aria-label="Show image ${i + 1}"><img src="${esc(gameImg(s, 200))}" alt="" loading="lazy"></button>`).join('')}</div>` : ''}
+        <div class="gallery__main">${shots.length ? `<img id="mainImg" src="${esc(big(shots[0]))}" alt="${esc(g.name)}" width="1280" height="720">` : `<div class="card-img--empty gallery__empty">${icon('gamepad', 64)}</div>`}</div>
+        ${shots.length > 1 ? `<div class="gallery__thumbs" role="list">${shots.map((s, i) => `<button class="thumb ${i === 0 ? 'is-on' : ''}" data-src="${esc(big(s))}" aria-label="Show image ${i + 1}"><img src="${esc(gameImg(s, 200))}" alt="" loading="lazy"></button>`).join('')}</div>` : ''}
       </div>
       <div class="detail__info">
         <div class="detail__tags">${(g.genres || []).slice(0, 3).map((x) => `<span class="chip chip--sm">${esc(x)}</span>`).join('')}</div>
@@ -45,6 +53,7 @@ function render(g) {
     ${g.description ? `<section class="detail__about"><h2>About this game</h2><div class="rich">${paragraphs(g.description)}</div></section>` : ''}`;
 
   const main = document.getElementById('mainImg');
+  if (main) mainFallback(main, shots[0]);
   root.querySelectorAll('.thumb').forEach((t) => t.addEventListener('click', () => {
     main.src = t.dataset.src;
     root.querySelectorAll('.thumb').forEach((x) => x.classList.toggle('is-on', x === t));

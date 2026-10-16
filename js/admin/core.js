@@ -20,6 +20,8 @@ const NAV = [
   { id: 'orders', href: '/admin/orders.html', label: 'Orders', icon: 'receipt' },
   { id: 'products', href: '/admin/products.html', label: 'Leather products', icon: 'package' },
   { id: 'games', href: '/admin/games.html', label: 'Games', icon: 'gamepad' },
+  { id: 'series', href: '/admin/series.html', label: 'Game series', icon: 'image' },
+  { id: 'requests', href: '/admin/game-requests.html', label: 'Game requests', icon: 'chat' },
   { id: 'software', href: '/admin/software.html', label: 'Software', icon: 'code' },
   { id: 'users', href: '/admin/users.html', label: 'Users', icon: 'users' },
 ];

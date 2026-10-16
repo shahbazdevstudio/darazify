@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Darazify — Leather goods and PC games</title>
-  <meta name="description" content="Shop hand-finished leather wallets, bags and belts, PC games at 250 PKR each, and software. One cart, one order.">
+  <meta name="description" content="Shop hand-finished leather wallets, bags and belts, PC games from 250 PKR, and software. One cart, one order.">
   <meta name="theme-color" content="#1a1310">
   <script>document.documentElement.dataset.theme = localStorage.getItem('dz_theme') || 'dark';</script>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='9' fill='%23b5621f'/%3E%3Cpath d='M11.5 9.5h4.6c4.3 0 6.4 2.7 6.4 6.5s-2.1 6.5-6.4 6.5h-4.6z' fill='%231a1310'/%3E%3C/svg%3E">
@@ -16,6 +16,7 @@
   <link rel="stylesheet" href="/css/footer.css">
   <link rel="stylesheet" href="/css/cards.css">
   <link rel="stylesheet" href="/css/hero.css">
+  <link rel="stylesheet" href="/css/series.css">
 </head>
 <body>
   <div id="site-header"></div>
@@ -47,14 +48,23 @@
         <div class="hero__stage" id="heroStage" aria-label="Popular games">
           <div class="cover cover--1 skeleton"></div><div class="cover cover--2 skeleton"></div><div class="cover cover--3 skeleton"></div>
         </div>
-        <div class="patch" aria-label="Every game costs 250 PKR"><strong>250 PKR</strong><span>every game, no exceptions</span></div>
+        <div class="patch" aria-label="Games start at 250 PKR"><strong>250 PKR</strong><span>standard price per game</span></div>
       </div>
+    </section>
+
+    <section class="section section--tight series" id="seriesSection" aria-labelledby="seriesTitle" hidden>
+      <div class="container">
+        <div class="section__head">
+          <div><h2 class="section__title" id="seriesTitle">Game series</h2><p class="section__sub">Pick a series and get the whole saga in one place.</p></div>
+        </div>
+      </div>
+      <div id="seriesRows"></div>
     </section>
 
     <div class="container">
       <div class="perks">
         <div class="perk"><span class="perk__icon" data-i="bag"></span><div><h3>One cart for everything</h3><p>Leather, games and software in the same order.</p></div></div>
-        <div class="perk"><span class="perk__icon" data-i="gamepad"></span><div><h3>Every game is 250 PKR</h3><p>No tiers or surprises, whatever the title.</p></div></div>
+        <div class="perk"><span class="perk__icon" data-i="gamepad"></span><div><h3>Simple game pricing</h3><p>Most games are a flat 250 PKR. The price is shown on every game.</p></div></div>
         <div class="perk"><span class="perk__icon" data-i="phone"></span><div><h3>Confirmed by the seller</h3><p>After you order, the seller contacts you to confirm delivery.</p></div></div>
       </div>
     </div>

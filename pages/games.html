@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>All games — Darazify</title>
-  <meta name="description" content="Browse PC games at a fixed 250 PKR each. Search by title, filter by genre and sort by popularity, rating or release date.">
+  <meta name="description" content="Browse PC games, most at a flat 250 PKR. Search by title, filter by genre and sort by popularity, rating or release date.">
   <meta name="theme-color" content="#1a1310">
   <script>document.documentElement.dataset.theme = localStorage.getItem('dz_theme') || 'dark';</script>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='9' fill='%23b5621f'/%3E%3Cpath d='M11.5 9.5h4.6c4.3 0 6.4 2.7 6.4 6.5s-2.1 6.5-6.4 6.5h-4.6z' fill='%231a1310'/%3E%3C/svg%3E">
@@ -16,6 +16,7 @@
   <link rel="stylesheet" href="/css/footer.css">
   <link rel="stylesheet" href="/css/cards.css">
   <link rel="stylesheet" href="/css/games.css">
+  <link rel="stylesheet" href="/css/series.css">
 </head>
 <body>
   <div id="site-header"></div>
@@ -23,7 +24,7 @@
     <div class="container">
       <header class="page-head page-head--games">
         <h1>All games</h1>
-        <p>Every PC game costs 250 PKR. Search a title, narrow by genre, or sort by what is popular.</p>
+        <p>PC games, most at a flat 250 PKR. Search a title, narrow by genre, or sort by what is popular.</p>
       </header>
       <form class="toolbar" onsubmit="return false" role="search" aria-label="Filter games">
         <div class="field"><label for="fSearch">Search</label><div class="input-icon"><span data-i="search" data-s="18"></span><input class="input" id="fSearch" type="search" placeholder="Search by game title" maxlength="80" autocomplete="off"></div></div>
@@ -38,10 +39,27 @@
         <div class="grid" id="gamesGrid"></div>
         <div id="pager"></div>
       </div>
+
+      <section class="request" id="request" aria-labelledby="requestTitle">
+        <div class="request__intro">
+          <span class="request__icon" data-i="gamepad" data-s="26"></span>
+          <h2 id="requestTitle">Can't find your game?</h2>
+          <p>Tell us which game you want and how to reach you. We will add it to the store and contact you.</p>
+        </div>
+        <form class="request__form" id="requestForm" novalidate>
+          <div class="field"><label for="rGame">Game name</label><input class="input" id="rGame" name="gameName" maxlength="120" placeholder="e.g. Red Dead Redemption 2" autocomplete="off"></div>
+          <div class="field"><label for="rContact">Email or WhatsApp number</label><input class="input" id="rContact" name="contact" maxlength="100" placeholder="you@email.com or +92 3xx xxxxxxx" autocomplete="email"></div>
+          <div class="field"><label for="rName">Your name <span class="muted">(optional)</span></label><input class="input" id="rName" name="name" maxlength="60" autocomplete="name"></div>
+          <div class="field"><label for="rNote">Anything else? <span class="muted">(optional)</span></label><input class="input" id="rNote" name="note" maxlength="500" placeholder="Edition, platform, version…"></div>
+          <input class="request__trap" type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">
+          <button class="btn btn-lg btn-signal" type="submit" id="rSend"><span>Request this game</span></button>
+        </form>
+      </section>
     </div>
   </main>
   <div id="site-footer"></div>
   <script type="module" src="/js/games.js"></script>
+  <script type="module" src="/js/game-request.js"></script>
   <script type="module" src="/js/icons-dom.js"></script>
 </body>
 </html>

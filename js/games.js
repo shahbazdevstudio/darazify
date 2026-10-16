@@ -1,7 +1,7 @@
 import { api, isAbort } from './api.js';
 import { mountLayout } from './layout.js';
 import { gameCard, skeletonCards, emptyState, errorState, renderPagination } from './components.js';
-import { getParams, setParams, debounce, esc } from './utils.js';
+import { getParams, setParams, debounce, esc, cdn } from './utils.js';
 import { PAGE_SIZE } from './config.js';
 
 mountLayout();
@@ -11,7 +11,7 @@ const els = { grid: $('#gamesGrid'), pager: $('#pager'), q: $('#fSearch'), genre
 
 const readState = () => {
   const p = getParams();
-  return { q: p.get('q') || '', genre: p.get('genre') || '', sort: p.get('sort') || '', page: Math.max(1, parseInt(p.get('page'), 10) || 1) };
+  return { q: p.get('q') || '', genre: p.get('genre') || '', sort: p.get('sort') || '', series: p.get('series') || '', page: Math.max(1, parseInt(p.get('page'), 10) || 1) };
 };
 let state = readState();
 let controller;
@@ -20,8 +20,23 @@ const syncControls = () => {
   els.q.value = state.q;
   els.genre.value = state.genre;
   els.sort.value = state.sort;
-  els.clear.hidden = !(state.q || state.genre || state.sort);
+  els.clear.hidden = !(state.q || state.genre || state.sort || state.series);
+  showSeries();
 };
+
+// When a series card was clicked, the page becomes that series' page
+let seriesInfo = null;
+const head = $('.page-head');
+const baseHead = head.innerHTML;
+async function showSeries() {
+  if (!state.series) { seriesInfo = null; head.innerHTML = baseHead; return; }
+  if (seriesInfo?.slug !== state.series) {
+    try { ({ series: seriesInfo } = await api(`/series/${encodeURIComponent(state.series)}`)); } catch { seriesInfo = null; }
+  }
+  if (!seriesInfo || seriesInfo.slug !== state.series) return;
+  head.innerHTML = `<span class="series-tag"><img src="${esc(cdn(seriesInfo.image, 120))}" alt="">Series</span><h1>${esc(seriesInfo.name)}</h1><p>Every ${esc(seriesInfo.name)} game in our store. <a class="link-btn" href="/pages/games.html">Browse all games</a></p>`;
+  document.title = `${seriesInfo.name} series — Darazify`;
+}
 
 async function load({ scroll = false } = {}) {
   controller?.abort();
@@ -33,7 +48,7 @@ async function load({ scroll = false } = {}) {
 
   try {
     const { games, pagination } = await api('/games', {
-      params: { search: state.q, genres: state.genre, ordering: state.sort, page: state.page, pageSize: PAGE_SIZE.games },
+      params: { search: state.q, genres: state.genre, ordering: state.sort, series: state.series, page: state.page, pageSize: PAGE_SIZE.games },
       signal: controller.signal,
     });
     if (!games.length) {
@@ -60,7 +75,7 @@ async function load({ scroll = false } = {}) {
 }
 
 const push = () => { setParams(state); syncControls(); };
-const clearAll = () => { state = { q: '', genre: '', sort: '', page: 1 }; push(); load(); };
+const clearAll = () => { state = { q: '', genre: '', sort: '', series: '', page: 1 }; push(); load(); };
 
 const change = (patch) => { state = { ...state, ...patch, page: 1 }; push(); load(); };
 els.q.addEventListener('input', debounce(() => change({ q: els.q.value.trim() }), 400));

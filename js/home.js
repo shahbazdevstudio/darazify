@@ -1,7 +1,7 @@
 import { api } from './api.js';
 import { mountLayout } from './layout.js';
 import { gameCard, productCard, softwareCard, skeletonCards, emptyState, loadInto } from './components.js';
-import { esc, gameImg, formatPrice } from './utils.js';
+import { esc, gameImg, formatPrice, cdn } from './utils.js';
 import { icon } from './icons.js';
 
 mountLayout();
@@ -18,16 +18,20 @@ const grid = (cards) => cards.join('');
 const renderCovers = (games) => {
   const picks = games.filter((g) => g.image).slice(0, 3);
   if (!picks.length) throw new Error('no covers');
+  // 1 game -> centre slot, 2 games -> left + right, 3 games -> all three
+  const slots = picks.length === 1 ? [2] : picks.length === 2 ? [1, 3] : [1, 2, 3];
   $('#heroStage').innerHTML = picks.map((g, i) => `
-    <a class="cover cover--${i + 1}" href="/pages/game-details.html?id=${encodeURIComponent(g.id)}" aria-label="${esc(g.name)}">
-      <img src="${esc(gameImg(g.image, 420))}" alt="${esc(g.name)}" ${i === 1 ? 'fetchpriority="high"' : ''} width="420" height="525">
+    <a class="cover cover--${slots[i]}" href="/pages/game-details.html?id=${encodeURIComponent(g.id)}" aria-label="${esc(g.name)}">
+      <img src="${esc(gameImg(g.image, 420))}" alt="${esc(g.name)}" ${slots[i] === 2 ? 'fetchpriority="high"' : ''} width="420" height="525">
       <span class="cover__cap"><strong>${esc(g.name)}</strong><span>${g.rating ? `${icon('star', 12)} ${Number(g.rating).toFixed(1)}` : ''}<em>${formatPrice(g.price)}</em></span></span>
     </a>`).join('');
 };
 
-// Covers come from the Popular list; if the admin has not picked any yet, use any game in the store.
-popularPromise
+// 1) the games the admin chose for the banner (max 3)
+// 2) otherwise the Popular games, 3) otherwise any game in the store
+api('/games', { params: { type: 'hero', pageSize: 3 } })
   .then(({ games }) => renderCovers(games))
+  .catch(() => popularPromise.then(({ games }) => renderCovers(games)))
   .catch(() => api('/games', { params: { pageSize: 3 } }).then(({ games }) => renderCovers(games)))
   .catch(() => {
     $('#heroStage').innerHTML = `<div class="cover-fallback">${icon('gamepad', 56)}<p>Games appear here as soon as they are added to the store.</p></div>`;
@@ -74,3 +78,24 @@ document.querySelectorAll('[data-rail-btn]').forEach((b) => b.addEventListener('
   const rail = document.getElementById(b.dataset.railBtn);
   rail.scrollBy({ left: (b.dataset.dir === 'next' ? 1 : -1) * rail.clientWidth * 0.85, behavior: 'smooth' });
 }));
+
+/* ------------------------------ Game series ------------------------------ */
+const seriesCard = (s) => `
+  <a class="scard" href="/pages/games.html?series=${encodeURIComponent(s.slug)}" aria-label="${esc(s.name)} series, ${s.count} game${s.count === 1 ? '' : 's'}">
+    <span class="scard__logo"><img src="${esc(cdn(s.image, 480))}" alt="" loading="lazy"></span>
+    <span class="scard__name">${esc(s.name)}</span><span class="scard__count">${s.count} game${s.count === 1 ? '' : 's'}</span>
+  </a>`;
+
+// Row 1 drifts left to right, row 2 right to left. The set is doubled for a seamless loop.
+const seriesRow = (items, dir) => {
+  let list = [...items];
+  while (list.length < 8) list = list.concat(items);
+  const html = list.map(seriesCard).join('');
+  return `<div class="marquee marquee--${dir}"><div class="marquee__track" style="--dur:${list.length * 5}s"><div class="marquee__set">${html}</div><div class="marquee__set" aria-hidden="true" inert>${html}</div></div></div>`;
+};
+
+api('/series').then(({ series }) => {
+  if (!series.length) return;
+  $('#seriesRows').innerHTML = seriesRow(series, 'right') + seriesRow([...series].reverse(), 'left');
+  $('#seriesSection').hidden = false;
+}).catch(() => { /* series are optional: the section just stays hidden */ });

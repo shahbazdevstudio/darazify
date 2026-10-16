@@ -13,7 +13,7 @@ const addBtn = (attrs, cls, label = 'Add to cart') =>
 export function gameCard(g) {
   const href = `/pages/game-details.html?id=${encodeURIComponent(g.id)}`;
   const media = g.image
-    ? `<img class="card-img" src="${esc(gameImg(g.image, 420))}" alt="${esc(g.name)}" loading="lazy" width="420" height="260">`
+    ? `<img class="card-img" src="${esc(gameImg(g.image, 420))}" alt="${esc(g.name)}" loading="lazy" width="420" height="260">${g.image2 ? `<img class="card-img card-img--alt" src="${esc(gameImg(g.image2, 420))}" alt="" loading="lazy" width="420" height="260">` : ''}`
     : `<div class="card-img card-img--empty">${icon('gamepad', 36)}</div>`;
   const meta = [g.genres?.slice(0, 2).join(', '), g.released?.slice(0, 4)].filter(Boolean).join(' · ');
   const attrs = `data-type="game" data-id="${esc(g.id)}" data-name="${esc(g.name)}" data-image="${esc(g.image || '')}" data-price="${g.price || GAME_PRICE}"`;

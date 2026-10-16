@@ -3,6 +3,7 @@ import { icon } from '../icons.js';
 import { confirmDialog, setBusy } from '../ui.js';
 import { esc, formatDate, debounce, gameImg } from '../utils.js';
 import { errorState, renderPagination } from '../components.js';
+import { mountImport } from './games-import.js';
 
 let state = { search: '', filter: '', page: 1 };
 let tab = 'browse';                       // 'browse' (all games) | 'store' (my games)
@@ -10,6 +11,7 @@ let cat = { search: '', ordering: '-added', page: 1 };
 let catCtl = 0;
 let tiles = {};                           // rawg id -> catalogue game (with store state)
 let ctl = 0;
+let seriesList = [];
 let byId = {};
 let picked = null;       // game chosen from the suggestions
 let suggestions = [];
@@ -29,7 +31,7 @@ function renderSuggestions(q, list) {
   panel.innerHTML = list.map((g, i) => `
     <button type="button" class="gsug" role="option" data-i="${i}" ${g.added ? 'disabled' : ''}>
       <span class="gsug__thumb">${g.image ? `<img src="${esc(gameImg(g.image, 160))}" alt="" loading="lazy">` : icon('gamepad', 20)}</span>
-      <span class="gsug__text"><strong>${esc(g.name)}</strong><small>${yearOf(g)}${g.genres?.length ? ` · ${esc(g.genres.slice(0, 2).join(', '))}` : ''}${g.rating ? ` · ${Number(g.rating).toFixed(1)} rating` : ''}</small></span>
+      <span class="gsug__text"><strong>${esc(g.name)}${g.isCustom ? ' <span class="chip chip--sm">Custom</span>' : ''}</strong><small>${yearOf(g)}${g.genres?.length ? ` · ${esc(g.genres.slice(0, 2).join(', '))}` : ''}${g.rating ? ` · ${Number(g.rating).toFixed(1)} rating` : ''}</small></span>
       ${g.added ? '<span class="gsug__tag">In store</span>' : ''}
     </button>`).join('');
   panel.hidden = false;
@@ -72,7 +74,9 @@ function drawPicked() {
     <div class="picked__body">
       <div><h3>${esc(g.name)}</h3>
         <div class="picked__meta"><span>${yearOf(g)}</span>${g.genres?.length ? `<span>${esc(g.genres.slice(0, 3).join(', '))}</span>` : ''}${g.rating ? `<span>${Number(g.rating).toFixed(1)} rating</span>` : ''}${g.platforms?.length ? `<span>${esc(g.platforms.slice(0, 3).join(', '))}</span>` : ''}</div></div>
+      <div class="field picked__price"><label for="pPrice">Price (PKR)</label><input class="input" id="pPrice" type="number" min="1" step="1" inputmode="numeric" placeholder="250 (default price)"></div>
       <div class="picked__flags">
+        <label class="switch"><input type="checkbox" id="pHero"><i></i><span><b>Home banner (Hero)</b><small>Show on the home page banner (max 3)</small></span></label>
         <label class="switch"><input type="checkbox" id="pPopular"><i></i><span><b>Popular games</b><small>Show in the “Popular games” list</small></span></label>
         <label class="switch"><input type="checkbox" id="pLatest"><i></i><span><b>Latest games</b><small>Show in the “Latest games” list</small></span></label>
       </div>
@@ -83,9 +87,9 @@ function drawPicked() {
     const btn = e.currentTarget;
     setBusy(btn, true, 'Adding…');
     try {
-      await adminApi('/admin/games', { method: 'POST', body: { rawgId: picked.id, isPopular: $('pPopular').checked, isLatest: $('pLatest').checked } });
+      await adminApi('/admin/games', { method: 'POST', body: { rawgId: picked.id, price: $('pPrice').value, isHero: $('pHero').checked, isPopular: $('pPopular').checked, isLatest: $('pLatest').checked } });
       toast(`${picked.name} added to the store`, 'success');
-      picked = null; drawPicked(); state.page = 1; if (tab === 'store') load(); else loadCatalogue(); refreshCounts();
+      picked = null; drawPicked(); state.page = 1; if (tab === 'store') load(); else loadCatalogue(); refreshCounts(); loadHero();
     } catch (err) { setBusy(btn, false); toast(err.message, 'error'); }
   });
   box.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
@@ -97,7 +101,9 @@ const tileFlags = (g) => `
   <div class="gtile__flags">
     <label class="gtile__flag" title="Show in Popular games"><span>Popular</span><span class="switch switch--bare"><input type="checkbox" data-tflag="isPopular" ${g.isPopular ? 'checked' : ''}><i></i></span></label>
     <label class="gtile__flag" title="Show in Latest games"><span>Latest</span><span class="switch switch--bare"><input type="checkbox" data-tflag="isLatest" ${g.isLatest ? 'checked' : ''}><i></i></span></label>
+    <label class="gtile__flag" title="Show in the home page banner (max 3)"><span>Hero</span><span class="switch switch--bare"><input type="checkbox" data-tflag="isHero" ${g.isHero ? 'checked' : ''}><i></i></span></label>
     <label class="gtile__flag" title="Visible on the website"><span>Visible</span><span class="switch switch--bare"><input type="checkbox" data-tflag="isActive" ${g.isActive ? 'checked' : ''}><i></i></span></label>
+    <label class="gtile__flag" title="Leave empty to use the default price"><span>Price</span><span class="pricebox"><input type="number" min="1" step="1" inputmode="numeric" data-tprice placeholder="250" value="${g.price ?? ''}" aria-label="Price in PKR"><em>PKR</em></span></label>
   </div>`;
 
 const tileHTML = (g) => `
@@ -147,7 +153,7 @@ async function tileAction(e) {
     setBusy(btn, true, 'Adding…');
     try {
       const { game } = await adminApi('/admin/games', { method: 'POST', body: { rawgId: g.id, isPopular: false, isLatest: false } });
-      Object.assign(g, { added: true, storeId: game._id, isPopular: false, isLatest: false, isActive: true });
+      Object.assign(g, { added: true, storeId: game._id, price: null, isHero: false, isPopular: false, isLatest: false, isActive: true });
       redrawTile(g);
       toast(`${g.name} added. Turn on Popular or Latest below it if you want it highlighted.`, 'success', 4500);
       refreshCounts();
@@ -159,10 +165,10 @@ async function tileAction(e) {
     if (!ok) return;
     try {
       await adminApi(`/admin/games/${g.storeId}`, { method: 'DELETE' });
-      Object.assign(g, { added: false, storeId: null, isPopular: false, isLatest: false, isActive: true });
+      Object.assign(g, { added: false, storeId: null, price: null, isHero: false, isPopular: false, isLatest: false, isActive: true });
       redrawTile(g);
       toast('Game removed from the store', 'success');
-      refreshCounts();
+      refreshCounts(); loadHero();
     } catch (err) { toast(err.message, 'error'); }
   }
 }
@@ -175,10 +181,65 @@ async function tileToggle(e) {
   try {
     await adminApi(`/admin/games/${g.storeId}`, { method: 'PATCH', body: { [t.dataset.tflag]: t.checked } });
     g[t.dataset.tflag] = t.checked;
-    toast(`${g.name}: ${{ isPopular: 'Popular', isLatest: 'Latest', isActive: 'Visible' }[t.dataset.tflag]} ${t.checked ? 'on' : 'off'}`, 'success', 2000);
+    toast(`${g.name}: ${FLAG_NAMES[t.dataset.tflag]} ${t.checked ? 'on' : 'off'}`, 'success', 2000);
     refreshCounts();
+    if (t.dataset.tflag === 'isHero') loadHero();
   } catch (err) { t.checked = !t.checked; toast(err.message, 'error'); }
   t.disabled = false;
+}
+
+
+const FLAG_NAMES = { isPopular: 'Popular', isLatest: 'Latest', isHero: 'Hero', isActive: 'Visible' };
+
+/** Saves a game's price (empty = back to the default price). `g` is the object holding `_id`/`storeId`. */
+async function savePrice(input, g, id) {
+  const raw = input.value.trim();
+  const price = raw === '' ? null : Number(raw);
+  if (price !== null && (!Number.isFinite(price) || price < 1)) {
+    toast('Enter a price of 1 PKR or more, or leave it empty for the default price.', 'error');
+    input.value = g.price ?? '';
+    return;
+  }
+  if ((g.price ?? null) === price) return;
+  input.disabled = true;
+  try {
+    const { game } = await adminApi(`/admin/games/${id}`, { method: 'PATCH', body: { price: price === null ? '' : price } });
+    g.price = game.price ?? null;
+    input.value = g.price ?? '';
+    toast(g.price ? `${g.name}: price set to ${g.price.toLocaleString()} PKR` : `${g.name}: back to the default price`, 'success', 2200);
+    loadHero();
+  } catch (err) { input.value = g.price ?? ''; toast(err.message, 'error'); }
+  input.disabled = false;
+}
+
+/* ------------------------- Home banner (Hero) picker ------------------------- */
+async function loadHero() {
+  const box = $('heroSlots');
+  if (!box) return;
+  try {
+    const { games } = await adminApi('/admin/games', { params: { filter: 'hero', limit: 3 } });
+    $('heroCount').textContent = `${games.length} of 3 chosen`;
+    box.innerHTML = [0, 1, 2].map((i) => {
+      const g = games[i];
+      return g
+        ? `<div class="hslot"><div class="hslot__img">${g.image ? `<img src="${esc(gameImg(g.image, 320))}" alt="">` : icon('gamepad', 24)}</div>
+            <div class="hslot__body"><strong title="${esc(g.name)}">${esc(g.name)}</strong><small>${(g.price ?? 250).toLocaleString()} PKR${g.isActive ? '' : ' · hidden'}</small></div>
+            <button class="icon-btn danger-icon" data-hero-off="${g._id}" aria-label="Remove ${esc(g.name)} from the banner">${icon('x', 18)}</button></div>`
+        : `<div class="hslot hslot--empty">${icon('plus', 20)}<span>Empty slot</span></div>`;
+    }).join('');
+  } catch (err) {
+    box.innerHTML = `<p class="muted">${esc(err.message)}</p>`;
+  }
+}
+
+async function heroOff(id) {
+  try {
+    await adminApi(`/admin/games/${id}`, { method: 'PATCH', body: { isHero: false } });
+    toast('Removed from the home banner', 'success', 2000);
+    await loadHero();
+    refreshCounts();
+    if (tab === 'store') load(); else loadCatalogue();
+  } catch (err) { toast(err.message, 'error'); }
 }
 
 /* ------------------------------- Store list ------------------------------- */
@@ -187,10 +248,13 @@ const row = (g) => `
     <td data-label="Game"><div class="who"><span class="thumb-sm thumb-sm--lg" style="width:76px">${g.image ? `<img src="${esc(gameImg(g.image, 200))}" alt="">` : icon('gamepad', 20)}</span><div><strong>${esc(g.name)}</strong><small>${esc((g.genres || []).slice(0, 2).join(', ')) || '—'}</small></div></div></td>
     <td data-label="Released">${g.released ? formatDate(g.released) : '—'}</td>
     <td data-label="Rating">${g.rating ? Number(g.rating).toFixed(1) : '—'}</td>
+    <td data-label="Price"><span class="pricebox"><input type="number" min="1" step="1" inputmode="numeric" data-price placeholder="250" value="${g.price ?? ''}" aria-label="Price of ${esc(g.name)} in PKR"><em>PKR</em></span></td>
+    <td data-label="Series"><select class="select select--sm" data-series aria-label="Series of ${esc(g.name)}"><option value="">No series</option>${seriesList.map((s) => `<option value="${s._id}" ${String(g.series) === String(s._id) ? 'selected' : ''}>${esc(s.name)}</option>`).join('')}</select></td>
+    <td class="tgl-cell" data-label="Hero">${flagSwitch('isHero', g.isHero, 'Show in the home page banner (max 3)')}</td>
     <td class="tgl-cell" data-label="Popular">${flagSwitch('isPopular', g.isPopular, 'Show in Popular games')}</td>
     <td class="tgl-cell" data-label="Latest">${flagSwitch('isLatest', g.isLatest, 'Show in Latest games')}</td>
     <td class="tgl-cell" data-label="Visible">${flagSwitch('isActive', g.isActive, 'Visible in store')}</td>
-    <td class="tbl__actions" data-label="Actions"><button class="icon-btn danger-icon" data-del="${g._id}" aria-label="Remove ${esc(g.name)}">${icon('trash', 18)}</button></td>
+    <td class="tbl__actions" data-label="Actions">${g.isCustom ? `<a class="icon-btn" href="/admin/game-form.html?id=${g._id}" aria-label="Edit ${esc(g.name)}">${icon('edit', 18)}</a>` : ''}<button class="icon-btn danger-icon" data-del="${g._id}" aria-label="Remove ${esc(g.name)}">${icon('trash', 18)}</button></td>
   </tr>`;
 
 async function refreshCounts() {
@@ -214,7 +278,11 @@ async function load() {
   const box = $('gamesBox');
   box.innerHTML = skeletonRows(6, 5);
   try {
-    const { games, counts, pagination } = await adminApi('/admin/games', { params: { search: state.search, filter: state.filter, page: state.page, limit: 10 } });
+    const [{ games, counts, pagination }, sr] = await Promise.all([
+      adminApi('/admin/games', { params: { search: state.search, filter: state.filter, page: state.page, limit: 10 } }),
+      adminApi('/admin/series').catch(() => ({ series: seriesList })),
+    ]);
+    seriesList = sr.series;
     if (my !== ctl) return;
     byId = Object.fromEntries(games.map((g) => [g._id, g]));
     document.querySelectorAll('[data-filter]').forEach((b) => { b.querySelector('small').textContent = counts[b.dataset.filter || 'all'] ?? 0; });
@@ -224,7 +292,7 @@ async function load() {
       $('pager').innerHTML = '';
       return;
     }
-    box.innerHTML = `<div class="table-wrap"><table class="tbl"><thead><tr><th>Game</th><th>Released</th><th>Rating</th><th class="tgl-cell">Popular</th><th class="tgl-cell">Latest</th><th class="tgl-cell">Visible</th><th><span class="sr-only">Actions</span></th></tr></thead><tbody>${games.map(row).join('')}</tbody></table></div>`;
+    box.innerHTML = `<div class="table-wrap"><table class="tbl"><thead><tr><th>Game</th><th>Released</th><th>Rating</th><th>Price</th><th>Series</th><th class="tgl-cell">Hero</th><th class="tgl-cell">Popular</th><th class="tgl-cell">Latest</th><th class="tgl-cell">Visible</th><th><span class="sr-only">Actions</span></th></tr></thead><tbody>${games.map(row).join('')}</tbody></table></div>`;
     renderPagination($('pager'), pagination, (p) => { state.page = p; load(); });
   } catch (err) {
     if (my !== ctl) return;
@@ -237,7 +305,7 @@ async function load() {
   const el = await mountAdmin({ active: 'games', title: 'Games' });
   el.innerHTML = `
     <section class="card-box gadd">
-      <header><h2>Add a game to your store</h2></header>
+      <header><h2>Add a game to your store</h2><a class="btn btn-sm btn-signal" href="/admin/game-form.html">${icon('plus', 16)}<span>Create custom game</span></a></header>
       <p class="gadd__lead">Only the games you add here appear on the website. Type a name, pick the game from the suggestions, then choose where it should be shown.</p>
       <div class="gsearch">
         <span class="gsearch__icon">${icon('search', 20)}</span>
@@ -245,6 +313,14 @@ async function load() {
         <div class="gsug-panel" id="gPanel" role="listbox" hidden></div>
       </div>
       <div class="picked" id="picked" hidden></div>
+    </section>
+
+    <section class="card-box gadd" id="importCard"></section>
+
+    <section class="card-box" id="heroCard">
+      <header><h2>Home banner (Hero)</h2><span class="muted" id="heroCount"></span></header>
+      <p class="gadd__lead">These games appear as the cover cards in the home page banner. Choose up to 3: turn on <b>Hero</b> on any game below (Browse or In your store). If none are chosen, popular games are shown.</p>
+      <div class="hero-slots" id="heroSlots"><div class="skeleton" style="height:84px;border-radius:14px"></div></div>
     </section>
 
     <div class="chips" role="group" aria-label="Games views" id="catTop">
@@ -267,7 +343,7 @@ async function load() {
         <div class="input-icon grow"><span>${icon('search', 18)}</span><input class="input" id="q" type="search" placeholder="Search games in your store" aria-label="Search games in your store"></div>
       </div>
       <div class="chips" role="group" aria-label="Filter games">
-        ${[['', 'All'], ['popular', 'Popular'], ['latest', 'Latest'], ['hidden', 'Hidden']].map(([v, l]) => `<button class="chip chip--btn chip--count ${v === '' ? 'is-on' : ''}" data-filter="${v}" aria-pressed="${v === ''}">${l} <small>0</small></button>`).join('')}
+        ${[['', 'All'], ['hero', 'Hero'], ['popular', 'Popular'], ['latest', 'Latest'], ['hidden', 'Hidden']].map(([v, l]) => `<button class="chip chip--btn chip--count ${v === '' ? 'is-on' : ''}" data-filter="${v}" aria-pressed="${v === ''}">${l} <small>0</small></button>`).join('')}
       </div>
       <div class="card-box card-box--flush"><div id="gamesBox"></div></div>
       <div class="list-foot"><span id="count" class="muted"></span></div>
@@ -300,6 +376,20 @@ async function load() {
 
   // Toggle Popular / Latest / Visible directly in the table
   el.addEventListener('change', async (e) => {
+    const sel = e.target.closest('[data-series]');
+    if (sel) {
+      const g = byId[sel.closest('tr').dataset.id];
+      sel.disabled = true;
+      try {
+        await adminApi(`/admin/games/${g._id}`, { method: 'PATCH', body: { series: sel.value } });
+        g.series = sel.value || null;
+        toast(sel.value ? `${g.name} added to ${sel.selectedOptions[0].text}` : `${g.name} removed from its series`, 'success', 2200);
+      } catch (err) { sel.value = g.series || ''; toast(err.message, 'error'); }
+      sel.disabled = false;
+      return;
+    }
+    const pi = e.target.closest('[data-price]');
+    if (pi) { const g = byId[pi.closest('tr').dataset.id]; if (g) savePrice(pi, g, g._id); return; }
     const t = e.target.closest('[data-flag]');
     if (!t) return;
     const tr = t.closest('tr');
@@ -309,7 +399,8 @@ async function load() {
     try {
       const { game } = await adminApi(`/admin/games/${g._id}`, { method: 'PATCH', body: { [flag]: t.checked } });
       Object.assign(g, game);
-      toast(`${g.name}: ${flag === 'isPopular' ? 'Popular' : flag === 'isLatest' ? 'Latest' : 'Visible'} ${t.checked ? 'on' : 'off'}`, 'success', 2200);
+      toast(`${g.name}: ${FLAG_NAMES[flag]} ${t.checked ? 'on' : 'off'}`, 'success', 2200);
+      if (flag === 'isHero') loadHero();
       if (state.filter) load();
       else load().catch(() => {}); // refreshes the counts
     } catch (err) { t.checked = !t.checked; toast(err.message, 'error'); }
@@ -330,6 +421,17 @@ async function load() {
   $('catSort').addEventListener('change', (e) => { cat = { ...cat, ordering: e.target.value, page: 1 }; loadCatalogue(); });
   $('paneBrowse').addEventListener('click', tileAction);
   $('paneBrowse').addEventListener('change', tileToggle);
+  $('paneBrowse').addEventListener('change', (e) => {
+    const pi = e.target.closest('[data-tprice]');
+    if (!pi) return;
+    const g = tiles[pi.closest('.gtile').dataset.rawg];
+    if (g && g.storeId) savePrice(pi, g, g.storeId);
+  });
+  el.addEventListener('keydown', (e) => { if (e.key === 'Enter' && e.target.matches('[data-price], [data-tprice]')) e.target.blur(); }); // Enter saves
+  $('heroSlots').addEventListener('click', (e) => { const b = e.target.closest('[data-hero-off]'); if (b) heroOff(b.dataset.heroOff); });
+
+  mountImport($('importCard'), { onDone: () => { refreshCounts(); loadHero(); if (tab === 'store') load(); else loadCatalogue(); } });
+  loadHero();
 
   refreshCounts();
   loadCatalogue();

@@ -16,8 +16,10 @@ export const cdn = (url, w = 640) =>
   url && url.includes('/upload/') ? url.replace('/upload/', `/upload/w_${w},c_limit,q_auto,f_auto/`) : url;
 
 /** RAWG serves resized copies of its images, which keeps game grids fast. */
-export const gameImg = (url, w = 420) =>
-  url && url.includes('media.rawg.io/media/games/') ? url.replace('/media/games/', `/media/resize/${w}/-/games/`) : url;
+export const gameImg = (url, w = 420) => {
+  if (url && url.includes('media.rawg.io/media/games/')) return url.replace('/media/games/', `/media/resize/${w}/-/games/`);
+  return url && url.includes('res.cloudinary.com') && url.includes('/upload/') ? cdn(url, w) : url; // custom games (Cloudinary)
+};
 
 export const getParams = () => new URLSearchParams(window.location.search);
 

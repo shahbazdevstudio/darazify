@@ -35,9 +35,10 @@
 .p-card:hover { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent), var(--shadow-2); }
 .p-card--software:hover { border-color: var(--soft); box-shadow: 0 0 0 1px var(--soft), var(--shadow-2); }
 .p-card--software .card__cat { color: var(--soft); }
-.p-card .card-img--alt { position: absolute; inset: 0; opacity: 0; }
-.p-card:hover .card-img--alt { opacity: 1; }
-.p-card:hover .card__media .card-img:not(.card-img--alt) { transform: none; }
+.p-card .card-img--alt, .g-card .card-img--alt { position: absolute; inset: 0; opacity: 0; }
+.p-card:hover .card-img--alt, .g-card:hover .card-img--alt { opacity: 1; }
+.p-card:hover .card__media .card-img:not(.card-img--alt), .g-card:hover .card__media .card-img:not(.card-img--alt) { transform: none; }
+.g-card:hover .card-img--alt { transform: none; }
 
 .card--skeleton { pointer-events: none; }
 .card--skeleton:hover { transform: none; box-shadow: none; }

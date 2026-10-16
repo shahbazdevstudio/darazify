@@ -28,7 +28,7 @@ function render(data) {
     <nav class="crumbs" aria-label="Breadcrumb"><a href="/index.html">Home</a><span>/</span><a href="${listHref}">${soft ? 'Software' : 'Leather'}</a><span>/</span><a href="${listHref}?category=${encodeURIComponent(p.category)}">${esc(p.category)}</a><span>/</span><span aria-current="page">${esc(p.title)}</span></nav>
     <div class="detail">
       <div class="gallery">
-        <div class="gallery__main gallery__main--square" id="zoomBox">
+        <div class="gallery__main gallery__main--square${soft ? '' : ' gallery__main--zoom'}" id="zoomBox">
           ${imgs.length ? `<img id="mainImg" src="${esc(cdn(imgs[0].url, 1000))}" alt="${esc(p.title)}" width="1000" height="1000">` : `<div class="card-img--empty gallery__empty">${icon('bag', 64)}</div>`}
           ${imgs.length > 1 ? `<button class="gallery__nav gallery__nav--prev" data-nav="-1" aria-label="Previous image">${icon('left', 20)}</button><button class="gallery__nav gallery__nav--next" data-nav="1" aria-label="Next image">${icon('right', 20)}</button>` : ''}
           ${p.discountPercent > 0 ? `<span class="card__badge card__badge--sale">-${p.discountPercent}%</span>` : ''}
@@ -69,7 +69,7 @@ function render(data) {
     root.querySelectorAll('.thumb').forEach((t) => t.addEventListener('click', () => show(Number(t.dataset.i))));
     root.querySelectorAll('[data-nav]').forEach((b) => b.addEventListener('click', () => show(idx + Number(b.dataset.nav))));
     const box = document.getElementById('zoomBox');
-    box.addEventListener('mousemove', (e) => {
+    if (!soft) box.addEventListener('mousemove', (e) => {
       const r = box.getBoundingClientRect();
       main.style.transformOrigin = `${((e.clientX - r.left) / r.width) * 100}% ${((e.clientY - r.top) / r.height) * 100}%`;
     });
