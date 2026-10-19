@@ -305,7 +305,7 @@ async function load() {
   const el = await mountAdmin({ active: 'games', title: 'Games' });
   el.innerHTML = `
     <section class="card-box gadd">
-      <header><h2>Add a game to your store</h2><a class="btn btn-sm btn-signal" href="/admin/game-form.html">${icon('plus', 16)}<span>Create custom game</span></a></header>
+      <header><h2>Add a game to your store</h2><span class="hdr-actions"><a class="btn btn-sm btn-secondary" href="/admin/game-ranking.html">${icon('star', 16)}<span>Rank games</span></a><a class="btn btn-sm btn-signal" href="/admin/game-form.html">${icon('plus', 16)}<span>Create custom game</span></a></span></header>
       <p class="gadd__lead">Only the games you add here appear on the website. Type a name, pick the game from the suggestions, then choose where it should be shown.</p>
       <div class="gsearch">
         <span class="gsearch__icon">${icon('search', 20)}</span>

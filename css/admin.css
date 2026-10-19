@@ -254,3 +254,31 @@
 .sr-card__row { display: flex; align-items: center; justify-content: space-between; gap: .5rem; }
 .sr-empty { grid-column: 1 / -1; padding: 1.5rem 0; text-align: center; }
 @media (max-width: 640px) { .sr-form { grid-template-columns: 1fr; } }
+
+/* Game ranking (admin) */
+.hdr-actions { display: flex; flex-wrap: wrap; gap: .5rem; }
+.rk-bar { display: flex; align-items: center; justify-content: space-between; gap: .8rem; flex-wrap: wrap; margin-top: .4rem; }
+#rkBox.is-busy { opacity: .55; pointer-events: none; transition: opacity .15s; }
+.rk-list { list-style: none; margin: 0; padding: 0; }
+.rk-row { display: grid; grid-template-columns: 22px 72px 80px minmax(0, 1fr) auto; align-items: center; gap: .9rem; padding: .7rem 1rem; border-bottom: 1px solid var(--line); background: var(--surface); transition: background-color .15s, box-shadow .15s; cursor: grab; }
+.rk-row:last-child { border-bottom: 0; }
+.rk-row:hover { background: var(--surface-2); }
+.rk-row.is-pinned { box-shadow: inset 3px 0 0 var(--signal); }
+.rk-row.is-dragging { opacity: .4; }
+.rk-row.is-over { box-shadow: inset 0 3px 0 var(--signal); }
+.rk-grip { color: var(--text-3); display: grid; place-items: center; }
+.rk-num { height: 42px; text-align: center; font-weight: 800; font-size: 1.05rem; padding: 0 .3rem; cursor: text; }
+.rk-img { width: 80px; height: 45px; object-fit: cover; border-radius: 8px; background: var(--surface-2); }
+.rk-name { display: grid; min-width: 0; }
+.rk-name strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rk-name small { color: var(--text-3); font-size: .78rem; }
+.rk-actions { display: flex; gap: .2rem; }
+.rk-empty { padding: 2.5rem 1rem; text-align: center; }
+.rk-sep { padding: .45rem 1rem; font-size: .72rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--text-3); background: var(--surface-2); border-bottom: 1px solid var(--line); border-top: 1px solid var(--line); }
+.rk-sep:first-child { border-top: 0; }
+@media (max-width: 640px) {
+  .rk-row { grid-template-columns: 60px 64px minmax(0, 1fr); gap: .6rem; padding: .7rem; cursor: default; }
+  .rk-grip { display: none; }
+  .rk-img { width: 64px; height: 36px; }
+  .rk-actions { grid-column: 1 / -1; justify-content: flex-end; }
+}

@@ -21,6 +21,8 @@ if (mount) mount.innerHTML = `
     </form>
   </section>`;
 
+if (mount && location.hash === '#request') requestAnimationFrame(() => document.getElementById('request')?.scrollIntoView({ block: 'center' }));
+
 const form = document.getElementById('requestForm');
 if (form) {
 const isEmail = (v) => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v);

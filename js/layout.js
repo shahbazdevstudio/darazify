@@ -13,6 +13,8 @@ const LINKS = [
   { href: '/pages/software.html', label: 'Software' },
 ];
 
+const REQUEST = { href: '/pages/games.html#request', label: 'Request game' };
+
 const here = () => window.location.pathname;
 const isActive = (href) => here().endsWith(href.replace('/pages', '').replace('/pages/', '')) || here() === href;
 
@@ -31,12 +33,12 @@ const headerHTML = () => `
     <div class="container nav__bar">
       <button class="icon-btn nav__burger" id="navOpen" aria-label="Open menu" aria-expanded="false" aria-controls="drawer">${icon('menu', 22)}</button>
       <a class="brand" href="/index.html" aria-label="Darazify home">
-        <img class="brand__logo" src="/assets/logo.webp" alt="" width="75" height="49">
-        <span class="brand__name">Daraz<span>ify</span></span>
+        <img class="brand__logo" src="/assets/logo.webp" alt="Darazify" width="75" height="49">
       </a>
       <div class="nav__search nav__search--desktop">${searchHTML('navSearch')}</div>
       <nav class="nav__links" aria-label="Main">
         ${LINKS.map((l) => `<a href="${l.href}" class="${isActive(l.href) ? 'is-active' : ''}">${l.label}</a>`).join('')}
+        <a href="${REQUEST.href}" class="nav__request">${REQUEST.label}</a>
       </nav>
       <div class="nav__actions">
         <button class="icon-btn" id="themeBtn" aria-label="Toggle colour theme"></button>
@@ -50,12 +52,13 @@ const headerHTML = () => `
   <div class="drawer-overlay" id="drawerOverlay" hidden></div>
   <aside class="drawer" id="drawer" aria-label="Menu" aria-hidden="true">
     <div class="drawer__head">
-      <img class="brand__logo" src="/assets/logo.webp" alt="" width="60" height="39"><span class="brand__name">Daraz<span>ify</span></span>
+      <img class="brand__logo" src="/assets/logo.webp" alt="Darazify" width="60" height="39">
       <button class="icon-btn" id="navClose" aria-label="Close menu">${icon('x', 22)}</button>
     </div>
     <nav class="drawer__links">
       <a href="/index.html">Home</a>
       ${LINKS.map((l) => `<a href="${l.href}">${l.label === 'Leather' ? 'Leather products' : l.label}</a>`).join('')}
+      <a href="${REQUEST.href}">${REQUEST.label}</a>
       <a href="/pages/cart.html">Cart <span class="pill" data-cart-count hidden>0</span></a>
     </nav>
     <div class="drawer__auth" data-auth-drawer></div>
