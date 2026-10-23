@@ -80,12 +80,15 @@ document.querySelectorAll('[data-rail-btn]').forEach((b) => b.addEventListener('
 }));
 
 /* ------------------------------ Game series ------------------------------ */
-// A clear portrait cover with only the series name on it. The cover is the one set in the admin,
-// otherwise the image of the series' first game.
+// A clean cover card: the series image from the backend. On hover (or keyboard focus) the image
+// dims under an overlay that shows the series name and how many games it holds.
 const seriesCard = (s) => `
-  <a class="scard${s.image ? '' : ' scard--noimg'}" href="/pages/games.html?series=${encodeURIComponent(s.slug)}" aria-label="${esc(s.name)} series, ${plural(s.count, 'game')}" title="${esc(plural(s.count, 'game'))}">
-    ${s.image ? `<img class="scard__img" src="${esc(gameImg(s.image, 480))}" alt="" loading="lazy" width="270" height="480">` : ''}
-    <h3 class="scard__name">${esc(s.name)}</h3>
+  <a class="scard${s.image ? '' : ' scard--noimg'}" href="/pages/games.html?series=${encodeURIComponent(s.slug)}" aria-label="${esc(s.name)} series, ${plural(s.count, 'game')}">
+    ${s.image ? `<img class="scard__img" src="${esc(gameImg(s.image, 640))}" alt="" loading="lazy" width="316" height="400">` : ''}
+    <span class="scard__overlay">
+      <span class="scard__name">${esc(s.name)}</span>
+      <span class="scard__count">${icon('gamepad', 15)}${esc(plural(s.count, 'game'))}</span>
+    </span>
   </a>`;
 
 // Older API versions send no image: take the first game's image for such a series
@@ -93,9 +96,59 @@ const withImage = (s) => (s.image !== undefined ? s : api('/games', { params: { 
   .then(({ games }) => ({ ...s, image: games.find((g) => g.image)?.image || '' }))
   .catch(() => ({ ...s, image: '' })));
 
+// Auto-swiping slider with pagination dots (native scroll + snap, so touch swipe still works)
+const initSeriesSlider = (rail, dotsEl) => {
+  const cards = [...rail.children];
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const DELAY = 3800;
+  let pages = 1, perView = 1, current = 0, timer = null, paused = false, visible = true;
+
+  const measure = () => {
+    const step = cards.length > 1 ? cards[1].offsetLeft - cards[0].offsetLeft : rail.clientWidth;
+    perView = Math.max(1, Math.round((rail.clientWidth + 1) / Math.max(step, 1)));
+    pages = Math.max(1, Math.ceil(cards.length / perView));
+    dotsEl.hidden = pages <= 1;
+    dotsEl.innerHTML = Array.from({ length: pages }, (_, i) => `<button type="button" class="series-dot" data-page="${i}" aria-label="Go to page ${i + 1}"></button>`).join('');
+    mark(pageFromScroll());
+  };
+  const maxScroll = () => rail.scrollWidth - rail.clientWidth;
+  const pageFromScroll = () => {
+    if (pages <= 1) return 0;
+    if (rail.scrollLeft >= maxScroll() - 4) return pages - 1;
+    const step = cards[1].offsetLeft - cards[0].offsetLeft;
+    return Math.min(pages - 1, Math.round(rail.scrollLeft / (step * perView)));
+  };
+  const mark = (i) => {
+    current = i;
+    dotsEl.querySelectorAll('.series-dot').forEach((d, n) => { d.classList.toggle('is-active', n === i); d.setAttribute('aria-current', n === i ? 'true' : 'false'); });
+  };
+  const goTo = (i) => {
+    const card = cards[Math.min(cards.length - 1, i * perView)];
+    const left = Math.min(maxScroll(), rail.scrollLeft + card.getBoundingClientRect().left - rail.getBoundingClientRect().left);
+    rail.scrollTo({ left: i === pages - 1 ? maxScroll() : left, behavior: 'smooth' });
+  };
+  const tick = () => { if (!paused && visible && !document.hidden && pages > 1) goTo((current + 1) % pages); };
+  const start = () => { stop(); if (!reduceMotion) timer = setInterval(tick, DELAY); };
+  const stop = () => { clearInterval(timer); timer = null; };
+  const pause = (v) => { paused = v; };
+
+  rail.addEventListener('scroll', () => mark(pageFromScroll()), { passive: true });
+  dotsEl.addEventListener('click', (e) => { const d = e.target.closest('[data-page]'); if (d) { goTo(Number(d.dataset.page)); start(); } });
+  ['mouseenter', 'focusin', 'touchstart'].forEach((ev) => rail.addEventListener(ev, () => pause(true), { passive: true }));
+  ['mouseleave', 'focusout'].forEach((ev) => rail.addEventListener(ev, () => pause(false)));
+  rail.addEventListener('touchend', () => setTimeout(() => pause(false), 2500), { passive: true });
+  if ('IntersectionObserver' in window) new IntersectionObserver(([en]) => { visible = en.isIntersecting; }, { threshold: 0.2 }).observe(rail);
+  let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(measure, 150); });
+
+  measure();
+  start();
+};
+
 api('/series').then(async ({ series }) => {
   if (!series.length) return;
   const full = await Promise.all(series.map(withImage));
-  $('#seriesRail').innerHTML = full.map(seriesCard).join('');
+  const rail = $('#seriesRail');
+  rail.innerHTML = full.map(seriesCard).join('');
   $('#seriesSection').hidden = false;
+  initSeriesSlider(rail, $('#seriesDots'));
 }).catch(() => { /* series are optional: the section just stays hidden */ });
