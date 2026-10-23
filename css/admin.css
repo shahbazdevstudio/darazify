@@ -239,13 +239,21 @@
 #heroCard .hero-slots { margin-top: 1rem; }
 
 /* Game series (admin) */
-.sr-form { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 1rem; align-items: end; }
+.sr-form { display: grid; grid-template-columns: 150px minmax(0, 1fr); gap: 1.2rem; align-items: stretch; }
+.sr-form__side { display: flex; flex-direction: column; justify-content: flex-end; gap: 1rem; }
+.sr-drop { display: grid; place-items: center; aspect-ratio: 9 / 16; max-height: 266px; padding: .6rem; background: var(--surface-2); border: 2px dashed var(--line-strong); border-radius: 16px; cursor: pointer; text-align: center; overflow: hidden; transition: border-color .2s; }
+.sr-drop:hover { border-color: var(--signal); }
+.sr-drop span { display: grid; place-items: center; gap: .25rem; width: 100%; height: 100%; font-size: .8rem; }
+.sr-drop small { color: var(--text-3); font-size: .7rem; }
+.sr-drop img { width: 100%; height: 100%; object-fit: cover; border-radius: 10px; }
+.sr-card__cover { display: grid; place-items: center; aspect-ratio: 9 / 16; max-height: 200px; border-radius: 12px; overflow: hidden; background: var(--surface); color: var(--text-3); font-size: .75rem; text-align: center; padding: .4rem; }
+.sr-card__cover img { width: 100%; height: 100%; object-fit: cover; }
 .sr-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 1rem; }
 .sr-card { display: flex; flex-direction: column; gap: .6rem; padding: .8rem; background: var(--surface-2); border: 1px solid var(--line); border-radius: 16px; }
 .sr-card__meta { color: var(--text-3); font-size: .82rem; } .sr-card__meta a { color: var(--thread); text-decoration: underline; }
 .sr-card__row { display: flex; align-items: center; justify-content: space-between; gap: .5rem; }
 .sr-empty { grid-column: 1 / -1; padding: 1.5rem 0; text-align: center; }
-@media (max-width: 640px) { .sr-form { grid-template-columns: 1fr; } }
+@media (max-width: 640px) { .sr-form { grid-template-columns: 1fr; } .sr-drop { max-width: 150px; } }
 
 /* Game ranking (admin) */
 .hdr-actions { display: flex; flex-wrap: wrap; gap: .5rem; }
