@@ -1,0 +1,15 @@
+# https://www.darazify.site/robots.txt
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /pages/cart.html
+Disallow: /pages/checkout.html
+Disallow: /pages/account.html
+Disallow: /pages/orders.html
+Disallow: /pages/order-success.html
+Disallow: /pages/login.html
+Disallow: /pages/signup.html
+Disallow: /pages/forgot-password.html
+Disallow: /pages/reset-password.html
+
+Sitemap: https://www.darazify.site/sitemap.xml

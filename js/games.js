@@ -1,7 +1,9 @@
 import { api, isAbort } from './api.js';
 import { mountLayout } from './layout.js';
 import { gameCard, skeletonCards, emptyState, errorState, renderPagination } from './components.js';
-import { getParams, setParams, debounce, esc, cdn } from './utils.js';
+import { getParams, setParams, debounce, esc, plural } from './utils.js';
+import { icon } from './icons.js';
+import { setSeo, resetSeo } from './seo.js';
 import { PAGE_SIZE } from './config.js';
 
 mountLayout();
@@ -28,14 +30,24 @@ const syncControls = () => {
 let seriesInfo = null;
 const head = $('.page-head');
 const baseHead = head.innerHTML;
+const renderSeriesHead = (total) => {
+  if (!seriesInfo || seriesInfo.slug !== state.series) return;
+  const n = total ?? seriesInfo.count;
+  const countText = n === undefined ? '' : `${plural(n, 'game')} in our store. `;
+  head.innerHTML = `<span class="series-tag">${icon('gamepad', 14)}Series</span><h1>${esc(seriesInfo.name)}</h1><p>${countText}Every ${esc(seriesInfo.name)} game we sell, in one place. <a class="link-btn" href="/pages/games.html">Browse all games</a></p>`;
+  setSeo({
+    title: `${seriesInfo.name} series — buy PC games`,
+    description: `Buy ${seriesInfo.name} PC games${n ? ` (${plural(n, 'game')})` : ''} at Darazify. Simple pricing from 250 PKR, confirmed by the seller after you order.`,
+    keywords: [`${seriesInfo.name} PC games`, `buy ${seriesInfo.name}`, `${seriesInfo.name} series`, 'PC games Pakistan'],
+    canonical: `/pages/games.html?series=${encodeURIComponent(seriesInfo.slug)}`,
+  });
+};
 async function showSeries() {
-  if (!state.series) { seriesInfo = null; head.innerHTML = baseHead; return; }
+  if (!state.series) { if (seriesInfo) resetSeo(); seriesInfo = null; head.innerHTML = baseHead; return; }
   if (seriesInfo?.slug !== state.series) {
     try { ({ series: seriesInfo } = await api(`/series/${encodeURIComponent(state.series)}`)); } catch { seriesInfo = null; }
   }
-  if (!seriesInfo || seriesInfo.slug !== state.series) return;
-  head.innerHTML = `<span class="series-tag"><img src="${esc(cdn(seriesInfo.image, 120))}" alt="">Series</span><h1>${esc(seriesInfo.name)}</h1><p>Every ${esc(seriesInfo.name)} game in our store. <a class="link-btn" href="/pages/games.html">Browse all games</a></p>`;
-  document.title = `${seriesInfo.name} series — Darazify`;
+  renderSeriesHead();
 }
 
 async function load({ scroll = false } = {}) {
@@ -62,6 +74,7 @@ async function load({ scroll = false } = {}) {
       return;
     }
     els.count.textContent = `${pagination.total.toLocaleString()} games · page ${pagination.page} of ${pagination.totalPages}`;
+    if (state.series && !state.q && !state.genre) renderSeriesHead(pagination.total);
     els.grid.innerHTML = games.map(gameCard).join('');
     renderPagination(els.pager, pagination, (page) => { state.page = page; push(); load({ scroll: true }); });
   } catch (err) {

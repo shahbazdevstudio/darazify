@@ -5,6 +5,8 @@ import { icon } from './icons.js';
 import { toast } from './ui.js';
 import { esc, formatPrice, gameImg, getParams, paragraphs } from './utils.js';
 import { qtyStepper, bindQty, starRating, errorState, notFoundState } from './components.js';
+import { setSeo, breadcrumbLd, productLd } from './seo.js';
+import { GAME_PRICE } from './config.js';
 
 const root = document.getElementById('detail');
 const id = getParams().get('id');
@@ -22,7 +24,30 @@ const mainFallback = (img, original) => {
 const fact = (label, value) => (value && value.length ? `<div><dt>${label}</dt><dd>${esc(Array.isArray(value) ? value.join(', ') : value)}</dd></div>` : '');
 
 function render(g) {
-  document.title = `${g.name} — Darazify`;
+  const price = g.price || GAME_PRICE;
+  const url = `/pages/game-details.html?id=${encodeURIComponent(g.id)}`;
+  const genres = g.genres || [];
+  setSeo({
+    title: `${g.name} PC Game — Buy for ${formatPrice(price)}`,
+    description: `Buy ${g.name} for PC at Darazify for ${formatPrice(price)}. ${g.description ? g.description : `${genres.slice(0, 3).join(', ')} game${g.released ? `, released ${g.released.slice(0, 4)}` : ''}.`} Confirmed by the seller after you order.`,
+    keywords: [g.name, `${g.name} PC`, `buy ${g.name}`, `${g.name} price in Pakistan`, ...genres.slice(0, 3).map((x) => `${x} PC games`), ...(g.developers || []).slice(0, 2), 'PC games Pakistan', 'Darazify'],
+    canonical: url,
+    image: g.image,
+    type: 'product',
+    jsonLd: [
+      breadcrumbLd([{ name: 'Home', url: '/index.html' }, { name: 'Games', url: '/pages/games.html' }, { name: g.name, url }]),
+      productLd({
+        types: ['Product', 'VideoGame'], name: g.name, description: g.description || `${g.name} for PC`, url, price, sku: g.id,
+        images: [g.image, ...(g.screenshots || [])].filter(Boolean), category: genres[0] || 'PC game',
+        extra: {
+          gamePlatform: g.platforms?.length ? g.platforms : ['PC'], ...(genres.length ? { genre: genres } : {}),
+          ...(g.released ? { datePublished: g.released } : {}),
+          ...(g.publishers?.length ? { publisher: g.publishers.map((n) => ({ '@type': 'Organization', name: n })) } : {}),
+          ...(g.developers?.length ? { author: g.developers.map((n) => ({ '@type': 'Organization', name: n })) } : {}),
+        },
+      }),
+    ],
+  });
   const shots = [g.image, ...(g.screenshots || [])].filter(Boolean);
   const released = g.released ? new Date(g.released).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : '';
 
@@ -79,13 +104,13 @@ function render(g) {
 
 (async () => {
   await mountLayout();
-  if (!id) { root.innerHTML = notFoundState('Game', '/pages/games.html', 'Browse games'); return; }
+  if (!id) { setSeo({ title: 'Game not found', noindex: true }); root.innerHTML = notFoundState('Game', '/pages/games.html', 'Browse games'); return; }
   root.innerHTML = skeleton;
   try {
     const { game } = await api(`/games/${encodeURIComponent(id)}`);
     render(game);
   } catch (err) {
-    if (err.status === 404) root.innerHTML = notFoundState('Game', '/pages/games.html', 'Browse games');
+    if (err.status === 404) { setSeo({ title: 'Game not found', noindex: true }); root.innerHTML = notFoundState('Game', '/pages/games.html', 'Browse games'); }
     else { root.innerHTML = errorState('Unable to load this game'); root.querySelector('[data-retry]').addEventListener('click', () => window.location.reload()); }
   }
 })();

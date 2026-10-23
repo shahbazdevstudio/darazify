@@ -48,3 +48,6 @@ export const formatDateTime = (iso) =>
 /** Turns plain text with blank-line separated paragraphs into safe <p> markup. */
 export const paragraphs = (text = '') =>
   esc(text).split(/\n{2,}|\r\n\r\n/).map((p) => `<p>${p.replace(/\n/g, '<br>')}</p>`).join('');
+
+/** plural(1, 'game') -> "1 game", plural(12, 'game') -> "12 games" */
+export const plural = (n, word) => `${Number(n || 0).toLocaleString('en-PK')} ${word}${Number(n) === 1 ? '' : 's'}`;

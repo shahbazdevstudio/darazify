@@ -3,11 +3,37 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Darazify — Leather goods and PC games</title>
-  <meta name="description" content="Shop hand-finished leather wallets, bags and belts, PC games from 250 PKR, and software. One cart, one order.">
+  <title>Darazify | Leather Goods, PC Games &amp; Software in Pakistan</title>
+  <meta name="description" content="Darazify sells hand-finished leather wallets, bags and belts, PC games from just 250 PKR, and software. Add everything to one cart and order once.">
+  <meta name="keywords" content="Darazify, leather wallets Pakistan, leather bags, leather belts, handmade leather goods, PC games Pakistan, buy PC games online, cheap PC games 250 PKR, software online, game store Pakistan">
+  <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+  <meta name="author" content="Darazify">
+  <meta name="application-name" content="Darazify">
+  <meta name="apple-mobile-web-app-title" content="Darazify">
+  <link rel="canonical" href="https://www.darazify.site/">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Darazify">
+  <meta property="og:locale" content="en_PK">
+  <meta property="og:title" content="Darazify | Leather Goods, PC Games &amp; Software in Pakistan">
+  <meta property="og:description" content="Darazify sells hand-finished leather wallets, bags and belts, PC games from just 250 PKR, and software. Add everything to one cart and order once.">
+  <meta property="og:url" content="https://www.darazify.site/">
+  <meta property="og:image" content="https://www.darazify.site/assets/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Darazify: leather goods, PC games and software">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Darazify | Leather Goods, PC Games &amp; Software in Pakistan">
+  <meta name="twitter:description" content="Darazify sells hand-finished leather wallets, bags and belts, PC games from just 250 PKR, and software. Add everything to one cart and order once.">
+  <meta name="twitter:image" content="https://www.darazify.site/assets/og-image.png">
   <meta name="theme-color" content="#1a1310">
+  <link rel="icon" href="/favicon.ico" sizes="48x48">
+  <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/favicon-16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png">
+  <link rel="manifest" href="/site.webmanifest">
+  <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"Organization","@id":"https://www.darazify.site/#org","name":"Darazify","url":"https://www.darazify.site/","logo":{"@type":"ImageObject","url":"https://www.darazify.site/assets/icon-512.png","width":512,"height":512},"email":"support.darazify@gmail.com","telephone":"+92 305 7152387","contactPoint":{"@type":"ContactPoint","telephone":"+92 305 7152387","email":"support.darazify@gmail.com","contactType":"customer support","areaServed":"PK","availableLanguage":["en","ur"]}},{"@type":"WebSite","@id":"https://www.darazify.site/#website","url":"https://www.darazify.site/","name":"Darazify","description":"Leather goods, PC games and software.","inLanguage":"en-PK","publisher":{"@id":"https://www.darazify.site/#org"},"potentialAction":{"@type":"SearchAction","target":{"@type":"EntryPoint","urlTemplate":"https://www.darazify.site/pages/games.html?q={search_term_string}"},"query-input":"required name=search_term_string"}},{"@type":"OnlineStore","@id":"https://www.darazify.site/#store","name":"Darazify","url":"https://www.darazify.site/","image":"https://www.darazify.site/assets/og-image.png","priceRange":"PKR","areaServed":{"@type":"Country","name":"Pakistan"},"currenciesAccepted":"PKR","parentOrganization":{"@id":"https://www.darazify.site/#org"}}]}</script>
   <script>document.documentElement.dataset.theme = localStorage.getItem('dz_theme') || 'dark';</script>
-  <link rel="icon" type="image/png" href="/assets/favicon.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Instrument+Sans:wght@400..700&display=swap" rel="stylesheet">
@@ -20,6 +46,7 @@
   <link rel="stylesheet" href="/css/request.css">
 </head>
 <body>
+  <noscript><p style="padding:1rem;text-align:center">Darazify needs JavaScript to show the store. <a href="/pages/games.html">Games</a> · <a href="/pages/products.html">Leather products</a> · <a href="/pages/software.html">Software</a></p></noscript>
   <div id="site-header"></div>
   <main id="main">
     <section class="hero" aria-labelledby="heroTitle">
@@ -65,9 +92,10 @@
       <div class="container">
         <div class="section__head">
           <div><h2 class="section__title" id="seriesTitle">Game series</h2><p class="section__sub">Pick a series and get the whole saga in one place.</p></div>
+          <div class="rail-btns"><button class="icon-btn" data-rail-btn="seriesRail" data-dir="prev" aria-label="Scroll series left" data-i="left"></button><button class="icon-btn" data-rail-btn="seriesRail" data-dir="next" aria-label="Scroll series right" data-i="right"></button></div>
         </div>
+        <div class="rail rail--series" id="seriesRail" tabindex="0" aria-label="Game series"></div>
       </div>
-      <div id="seriesRows"></div>
     </section>
 
     <section class="section" aria-labelledby="latestGamesTitle">

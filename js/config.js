@@ -7,6 +7,12 @@
  */
 export const API_BASE_URL = window.DARAZIFY_API_URL || 'https://darazify-backend.vercel.app/api';
 
+/**
+ * Public address of the live website (no trailing slash). Used for canonical links, Open Graph URLs,
+ * structured data and the sitemap. Change it here (and in robots.txt / sitemap.xml) if the main domain changes.
+ */
+export const SITE_URL = 'https://www.darazify.site';
+
 export const GAMES_API_URL = `${API_BASE_URL}/games`;
 
 export const GAME_PRICE = 250;

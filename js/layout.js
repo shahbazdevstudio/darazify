@@ -32,9 +32,7 @@ const headerHTML = () => `
   <header class="nav" id="nav">
     <div class="container nav__bar">
       <button class="icon-btn nav__burger" id="navOpen" aria-label="Open menu" aria-expanded="false" aria-controls="drawer">${icon('menu', 22)}</button>
-      <a class="brand" href="/index.html" aria-label="Darazify home">
-        <img class="brand__logo" src="/assets/logo.webp" alt="Darazify" width="75" height="49">
-      </a>
+      <a class="brand" href="/index.html" aria-label="Darazify home"><span class="brand__name">Daraz<span>ify</span></span></a>
       <div class="nav__search nav__search--desktop">${searchHTML('navSearch')}</div>
       <nav class="nav__links" aria-label="Main">
         ${LINKS.map((l) => `<a href="${l.href}" class="${isActive(l.href) ? 'is-active' : ''}">${l.label}</a>`).join('')}
@@ -52,7 +50,7 @@ const headerHTML = () => `
   <div class="drawer-overlay" id="drawerOverlay" hidden></div>
   <aside class="drawer" id="drawer" aria-label="Menu" aria-hidden="true">
     <div class="drawer__head">
-      <img class="brand__logo" src="/assets/logo.webp" alt="Darazify" width="60" height="39">
+      <a class="brand" href="/index.html" aria-label="Darazify home"><span class="brand__name">Daraz<span>ify</span></span></a>
       <button class="icon-btn" id="navClose" aria-label="Close menu">${icon('x', 22)}</button>
     </div>
     <nav class="drawer__links">
@@ -77,7 +75,7 @@ const footerHTML = () => {
   <footer class="footer">
     <div class="container footer__grid">
       <div class="footer__brand">
-        <a class="brand footer__logo" href="/index.html" aria-label="Darazify home"><img src="/assets/logo-lg.webp" alt="Darazify.site" width="220" height="144" loading="lazy"></a>
+        <a class="brand footer__logo" href="/index.html" aria-label="Darazify home"><span class="brand__name">Daraz<span>ify</span></span></a>
         <p>Leather goods made to be carried daily, PC games at one simple price, and useful software. Order them in a single cart and the seller confirms by phone.</p>
         ${socials ? `<div class="footer__social">${socials}</div>` : ''}
       </div>

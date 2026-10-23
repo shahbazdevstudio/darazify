@@ -5,6 +5,7 @@ import { icon } from './icons.js';
 import { toast } from './ui.js';
 import { esc, formatPrice, cdn, getParams } from './utils.js';
 import { qtyStepper, bindQty, errorState, notFoundState, productCard } from './components.js';
+import { setSeo, breadcrumbLd, productLd } from './seo.js';
 
 // One script powers /pages/product-details.html (leather) and /pages/software-details.html (software).
 const TYPE = document.body.dataset.type === 'software' ? 'software' : 'product';
@@ -17,11 +18,24 @@ const skeleton = `<div class="detail"><div class="skeleton detail__skel-media" s
 function render(data) {
   const p = data.product || data.software;
   const related = data.related;
-  document.title = `${p.title} — Darazify`;
   const imgs = p.images || [];
   const out = p.stock <= 0;
   const soft = TYPE === 'software';
   const listHref = soft ? '/pages/software.html' : '/pages/products.html';
+  const url = `/pages/${soft ? 'software' : 'product'}-details.html?id=${encodeURIComponent(p._id)}`;
+  const kind = soft ? 'software' : 'leather';
+  setSeo({
+    title: soft ? `${p.title} — Buy Software Online` : `${p.title} — Handmade Leather ${p.category || 'Goods'}`,
+    description: p.shortDescription || p.description || `Buy ${p.title} at Darazify for ${formatPrice(p.price)}. ${soft ? 'Software' : 'Leather goods'} confirmed by the seller after you order.`,
+    keywords: [p.title, p.category, `buy ${p.title}`, soft ? 'software Pakistan' : 'leather goods Pakistan', soft ? 'buy software online' : `${p.category || 'leather'} online`, 'Darazify'],
+    canonical: url,
+    image: imgs[0]?.url ? cdn(imgs[0].url, 1200) : undefined,
+    type: 'product',
+    jsonLd: [
+      breadcrumbLd([{ name: 'Home', url: '/index.html' }, { name: soft ? 'Software' : 'Leather', url: listHref }, ...(p.category ? [{ name: p.category, url: `${listHref}?category=${encodeURIComponent(p.category)}` }] : []), { name: p.title, url }]),
+      productLd({ name: p.title, description: p.shortDescription || p.description || `${p.title} (${kind})`, url, price: p.price, inStock: !out, sku: p._id, category: p.category, images: imgs.map((im) => cdn(im.url, 1200)) }),
+    ],
+  });
   const stockLabel = out ? '<span class="stock stock--out">Out of stock</span>' : p.stock <= 5 ? `<span class="stock stock--low">Only ${p.stock} left</span>` : '<span class="stock stock--in">In stock</span>';
 
   root.innerHTML = `
@@ -96,12 +110,12 @@ function render(data) {
 
 (async () => {
   await mountLayout();
-  if (!id) { root.innerHTML = notFoundState(TYPE === 'software' ? 'Software' : 'Product', TYPE === 'software' ? '/pages/software.html' : '/pages/products.html', TYPE === 'software' ? 'Browse software' : 'Browse products'); return; }
+  if (!id) { setSeo({ title: 'Not found', noindex: true }); root.innerHTML = notFoundState(TYPE === 'software' ? 'Software' : 'Product', TYPE === 'software' ? '/pages/software.html' : '/pages/products.html', TYPE === 'software' ? 'Browse software' : 'Browse products'); return; }
   root.innerHTML = skeleton;
   try {
     render(await api(`${API}/${encodeURIComponent(id)}`));
   } catch (err) {
-    if (err.status === 404) root.innerHTML = notFoundState(TYPE === 'software' ? 'Software' : 'Product', TYPE === 'software' ? '/pages/software.html' : '/pages/products.html', TYPE === 'software' ? 'Browse software' : 'Browse products');
+    if (err.status === 404) { setSeo({ title: 'Not found', noindex: true }); root.innerHTML = notFoundState(TYPE === 'software' ? 'Software' : 'Product', TYPE === 'software' ? '/pages/software.html' : '/pages/products.html', TYPE === 'software' ? 'Browse software' : 'Browse products'); }
     else { root.innerHTML = errorState(`Unable to load this ${TYPE}`); root.querySelector('[data-retry]').addEventListener('click', () => window.location.reload()); }
   }
 })();

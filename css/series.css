@@ -1,25 +1,26 @@
-/* Game series: two white logo rows under the hero, moving in opposite directions */
+/* Game series: simple cards (name + total games) in a rail under the hero */
 .series { overflow: hidden; }
-.series .section__head { margin-bottom: 1.4rem; }
-.marquee { --gap: 1.6rem; overflow: hidden; padding: .5rem 0; -webkit-mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent); mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent); }
-.marquee + .marquee { margin-top: .4rem; }
-.marquee__track { display: flex; width: max-content; animation: marquee var(--dur, 40s) linear infinite; will-change: transform; }
-.marquee--right .marquee__track { animation-name: marquee-right; }
-.marquee:hover .marquee__track, .marquee:focus-within .marquee__track { animation-play-state: paused; }
-.marquee__set { display: flex; gap: var(--gap); padding-right: var(--gap); }
-@keyframes marquee { to { transform: translateX(-50%); } }
-@keyframes marquee-right { from { transform: translateX(-50%); } to { transform: translateX(0); } }
+.rail--series { gap: 1rem; }
+.rail--series > * { flex: 0 0 clamp(210px, 21vw, 264px); }
 
-.scard { flex: 0 0 auto; display: grid; place-items: center; width: clamp(104px, 11vw, 150px); aspect-ratio: 3 / 2; padding: .25rem; border-radius: 14px; transition: transform .3s var(--ease), filter .3s; }
-.scard img { max-width: 100%; max-height: 100%; object-fit: contain; filter: drop-shadow(0 4px 10px rgba(0, 0, 0, .35)); transition: filter .3s; }
-.scard:hover, .scard:focus-visible { transform: translateY(-4px) scale(1.08); }
-.scard:hover img, .scard:focus-visible img { filter: drop-shadow(0 8px 18px rgba(0, 0, 0, .5)); }
-.scard:focus-visible { outline: 2px solid var(--signal); outline-offset: 2px; }
+.scard { position: relative; display: flex; flex-direction: column; justify-content: space-between; gap: 1.4rem; min-height: 150px; padding: 1.15rem 1.2rem 1.05rem; overflow: hidden; isolation: isolate; background: var(--surface); border: 1px solid var(--line); border-radius: 20px; transition: transform .35s var(--ease), border-color .3s, box-shadow .35s; }
+.scard::before { content: ''; position: absolute; z-index: -1; inset: 0; background: radial-gradient(120% 90% at 100% 0%, var(--signal-soft), transparent 62%); opacity: .75; transition: opacity .3s; }
+.scard:hover, .scard:focus-visible { transform: translateY(-5px); border-color: var(--signal); box-shadow: 0 0 0 1px var(--signal), var(--shadow-2); }
+.scard:hover::before, .scard:focus-visible::before { opacity: 1; }
+.scard:focus-visible { outline: 2px solid var(--signal); outline-offset: 3px; }
 
-/* Series banner on the games page */
-.series-tag { display: block; margin-bottom: .6rem; }
-.series-tag img { height: clamp(48px, 8vw, 72px); width: auto; object-fit: contain; filter: drop-shadow(0 4px 10px rgba(0,0,0,.35)); }
-.series-tag span { display: none; }
+.scard__kicker { display: inline-flex; align-items: center; gap: .4rem; color: var(--text-3); font-size: .76rem; font-weight: 600; letter-spacing: .02em; }
+.scard__kicker .icon { color: var(--signal); }
+.scard__name { font: 700 clamp(1.15rem, 1.6vw, 1.4rem)/1.2 var(--font-display); letter-spacing: -.025em; color: var(--text); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: anywhere; margin-top: .45rem; }
+.scard__foot { display: flex; align-items: center; justify-content: space-between; gap: .6rem; padding-top: .8rem; border-top: 1.5px dashed var(--line-strong); }
+.scard__count { display: inline-flex; align-items: baseline; gap: .4rem; color: var(--text-2); font-size: .88rem; }
+.scard__count strong { font: 800 1.45rem/1 var(--font-display); letter-spacing: -.03em; color: var(--thread); }
+.scard__go { display: grid; place-items: center; width: 32px; height: 32px; border-radius: 50%; background: var(--surface-2); border: 1px solid var(--line); color: var(--text-2); transition: background-color .25s, color .25s, border-color .25s, transform .3s var(--ease); }
+.scard:hover .scard__go, .scard:focus-visible .scard__go { background: var(--signal); border-color: var(--signal); color: #fff; transform: translateX(3px); }
 
-@media (max-width: 560px) { .scard { width: 92px; } .marquee { --gap: 1rem; } }
-@media (prefers-reduced-motion: reduce) { .marquee { overflow-x: auto; -webkit-mask-image: none; mask-image: none; } .marquee__track { animation: none; } .marquee__set[inert] { display: none; } }
+/* Series heading on the games page */
+.series-tag { display: inline-flex; align-items: center; gap: .4rem; height: 28px; padding: 0 .8rem; margin-bottom: .8rem; border-radius: 999px; background: var(--signal-soft); border: 1px solid var(--signal); color: var(--text); font-size: .78rem; font-weight: 700; letter-spacing: .02em; }
+.series-tag .icon { color: var(--signal-hover); }
+
+@media (max-width: 560px) { .rail--series > * { flex-basis: 70vw; } .scard { min-height: 138px; } }
+@media (prefers-reduced-motion: reduce) { .scard, .scard__go { transition: none; } .scard:hover, .scard:focus-visible { transform: none; } }

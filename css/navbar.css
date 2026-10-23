@@ -4,12 +4,10 @@
 .nav__bar { display: flex; align-items: center; gap: 1.1rem; height: var(--nav-h); }
 
 .brand { display: inline-flex; align-items: center; gap: .6rem; flex-shrink: 0; }
-.brand__logo { height: 54px; width: auto; display: block; transition: transform .35s var(--ease); filter: drop-shadow(0 2px 6px rgba(0,0,0,.35)); }
-.brand:hover .brand__logo { transform: scale(1.06) rotate(-2deg); }
-.brand__mark { color: var(--accent); display: grid; transition: transform .35s var(--ease); }
-.brand:hover .brand__mark { transform: rotate(-8deg) scale(1.05); }
-.brand__name { font: 700 1.55rem/1 var(--font-display); letter-spacing: -.04em; }
+.brand__name { font: 800 1.75rem/1 var(--font-display); letter-spacing: -.045em; color: var(--text); white-space: nowrap; transition: transform .35s var(--ease); }
 .brand__name span { color: var(--thread); }
+.brand:hover .brand__name { transform: translateY(-1px); }
+.brand:focus-visible { outline: 2px solid var(--signal); outline-offset: 4px; border-radius: 8px; }
 
 .nav__burger { display: none; }
 .nav__search--desktop { flex: 1; max-width: 640px; margin-inline: auto; }

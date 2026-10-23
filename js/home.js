@@ -1,7 +1,7 @@
 import { api } from './api.js';
 import { mountLayout } from './layout.js';
 import { gameCard, productCard, softwareCard, skeletonCards, emptyState, loadInto } from './components.js';
-import { esc, gameImg, formatPrice, cdn } from './utils.js';
+import { esc, gameImg, formatPrice, plural } from './utils.js';
 import { icon } from './icons.js';
 
 mountLayout();
@@ -81,20 +81,19 @@ document.querySelectorAll('[data-rail-btn]').forEach((b) => b.addEventListener('
 
 /* ------------------------------ Game series ------------------------------ */
 const seriesCard = (s) => `
-  <a class="scard" href="/pages/games.html?series=${encodeURIComponent(s.slug)}" aria-label="${esc(s.name)} series" title="${esc(s.name)}">
-    <img src="${esc(cdn(s.image, 400))}" alt="${esc(s.name)}" loading="lazy">
+  <a class="scard" href="/pages/games.html?series=${encodeURIComponent(s.slug)}" aria-label="${esc(s.name)} series, ${plural(s.count, 'game')}">
+    <div>
+      <span class="scard__kicker">${icon('gamepad', 14)}Series</span>
+      <h3 class="scard__name">${esc(s.name)}</h3>
+    </div>
+    <div class="scard__foot">
+      <span class="scard__count"><strong>${Number(s.count || 0).toLocaleString('en-PK')}</strong>${Number(s.count) === 1 ? 'game' : 'games'}</span>
+      <span class="scard__go" aria-hidden="true">${icon('right', 16)}</span>
+    </div>
   </a>`;
-
-// Row 1 drifts left to right, row 2 right to left. The set is doubled for a seamless loop.
-const seriesRow = (items, dir) => {
-  let list = [...items];
-  while (list.length < 8) list = list.concat(items);
-  const html = list.map(seriesCard).join('');
-  return `<div class="marquee marquee--${dir}"><div class="marquee__track" style="--dur:${list.length * 5}s"><div class="marquee__set">${html}</div><div class="marquee__set" aria-hidden="true" inert>${html}</div></div></div>`;
-};
 
 api('/series').then(({ series }) => {
   if (!series.length) return;
-  $('#seriesRows').innerHTML = seriesRow(series, 'right') + seriesRow([...series].reverse(), 'left');
+  $('#seriesRail').innerHTML = series.map(seriesCard).join('');
   $('#seriesSection').hidden = false;
 }).catch(() => { /* series are optional: the section just stays hidden */ });

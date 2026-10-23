@@ -239,17 +239,9 @@
 #heroCard .hero-slots { margin-top: 1rem; }
 
 /* Game series (admin) */
-.sr-form { display: grid; grid-template-columns: 240px minmax(0, 1fr); gap: 1.2rem; align-items: stretch; }
-.sr-form__side { display: flex; flex-direction: column; justify-content: space-between; gap: 1rem; }
-.sr-drop { display: grid; place-items: center; min-height: 170px; padding: .8rem; background: #fff; color: #1a1310; border: 2px dashed var(--line-strong); border-radius: 16px; cursor: pointer; text-align: center; transition: border-color .2s; }
-.sr-drop:hover { border-color: var(--signal); }
-.sr-drop span { display: grid; place-items: center; gap: .25rem; width: 100%; height: 100%; }
-.sr-drop small { color: #6b5f57; font-size: .75rem; }
-.sr-drop img { max-width: 100%; max-height: 150px; object-fit: contain; }
+.sr-form { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 1rem; align-items: end; }
 .sr-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 1rem; }
 .sr-card { display: flex; flex-direction: column; gap: .6rem; padding: .8rem; background: var(--surface-2); border: 1px solid var(--line); border-radius: 16px; }
-.sr-card__logo { display: grid; place-items: center; aspect-ratio: 16 / 10; background: #fff; border-radius: 12px; padding: .5rem; }
-.sr-card__logo img { max-width: 100%; max-height: 100%; object-fit: contain; }
 .sr-card__meta { color: var(--text-3); font-size: .82rem; } .sr-card__meta a { color: var(--thread); text-decoration: underline; }
 .sr-card__row { display: flex; align-items: center; justify-content: space-between; gap: .5rem; }
 .sr-empty { grid-column: 1 / -1; padding: 1.5rem 0; text-align: center; }
