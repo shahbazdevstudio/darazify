@@ -80,21 +80,23 @@ document.querySelectorAll('[data-rail-btn]').forEach((b) => b.addEventListener('
 }));
 
 /* ------------------------------ Game series ------------------------------ */
-// A clean cover card: the series image from the backend. On hover (or keyboard focus) the image
-// dims under an overlay that shows the series name and how many games it holds.
-const seriesCard = (s) => `
-  <a class="scard${s.image ? '' : ' scard--noimg'}" href="/pages/games.html?series=${encodeURIComponent(s.slug)}" aria-label="${esc(s.name)} series, ${plural(s.count, 'game')}">
-    ${s.image ? `<img class="scard__img" src="${esc(gameImg(s.image, 640))}" alt="" loading="lazy" width="316" height="400">` : ''}
+// A clean cover card built only from the series API: cover image (image.url), name and total games.
+// On hover (or keyboard focus) the image dims under an overlay showing the name and the game count.
+// The cover can be { url, publicId } (admin shape) or a plain url string (public shape).
+const coverOf = (s) => (typeof s.image === 'string' ? s.image : s.image?.url) || '';
+
+const seriesCard = (s) => {
+  const cover = coverOf(s);
+  const count = Number(s.count) || 0;
+  return `
+  <a class="scard${cover ? '' : ' scard--noimg'}" href="/pages/games.html?series=${encodeURIComponent(s.slug)}" aria-label="${esc(s.name)} series, ${plural(count, 'game')}">
+    ${cover ? `<img class="scard__img" src="${esc(gameImg(cover, 640))}" alt="${esc(s.name)}" loading="lazy" width="316" height="400">` : ''}
     <span class="scard__overlay">
       <span class="scard__name">${esc(s.name)}</span>
-      <span class="scard__count">${icon('gamepad', 15)}${esc(plural(s.count, 'game'))}</span>
+      <span class="scard__count">${icon('gamepad', 15)}${esc(plural(count, 'game'))}</span>
     </span>
   </a>`;
-
-// Older API versions send no image: take the first game's image for such a series
-const withImage = (s) => (s.image !== undefined ? s : api('/games', { params: { series: s.slug, pageSize: 3 } })
-  .then(({ games }) => ({ ...s, image: games.find((g) => g.image)?.image || '' }))
-  .catch(() => ({ ...s, image: '' })));
+};
 
 // Auto-swiping slider with pagination dots (native scroll + snap, so touch swipe still works)
 const initSeriesSlider = (rail, dotsEl) => {
@@ -144,11 +146,13 @@ const initSeriesSlider = (rail, dotsEl) => {
   start();
 };
 
-api('/series').then(async ({ series }) => {
-  if (!series.length) return;
-  const full = await Promise.all(series.map(withImage));
+// Public series endpoint (same data as /admin/series: name, slug, image, count). The admin one needs
+// an admin login, so normal visitors could never load it.
+api('/series').then(({ series }) => {
+  const list = (series || []).filter((s) => s.isActive !== false && s.name && s.slug);
+  if (!list.length) return;
   const rail = $('#seriesRail');
-  rail.innerHTML = full.map(seriesCard).join('');
+  rail.innerHTML = list.map(seriesCard).join('');
   $('#seriesSection').hidden = false;
   initSeriesSlider(rail, $('#seriesDots'));
 }).catch(() => { /* series are optional: the section just stays hidden */ });
