@@ -80,20 +80,36 @@ document.querySelectorAll('[data-rail-btn]').forEach((b) => b.addEventListener('
 }));
 
 /* ------------------------------ Game series ------------------------------ */
-const seriesCard = (s) => `
+const MAX_NAMES = 5;
+const seriesCard = (s) => {
+  const names = (s.games || []).slice(0, MAX_NAMES);
+  const more = Math.max(0, Number(s.count || 0) - names.length);
+  return `
   <a class="scard" href="/pages/games.html?series=${encodeURIComponent(s.slug)}" aria-label="${esc(s.name)} series, ${plural(s.count, 'game')}">
+    ${s.cover ? `<img class="scard__bg" src="${esc(gameImg(s.cover, 420))}" alt="" loading="lazy">` : ''}
     <div>
       <span class="scard__kicker">${icon('gamepad', 14)}Series</span>
       <h3 class="scard__name">${esc(s.name)}</h3>
     </div>
+    <ul class="scard__games">
+      ${names.map((n, i) => `<li><i>${String(i + 1).padStart(2, '0')}</i><span>${esc(n)}</span></li>`).join('')}
+      ${more ? `<li class="scard__more">+ ${more} more</li>` : ''}
+    </ul>
     <div class="scard__foot">
       <span class="scard__count"><strong>${Number(s.count || 0).toLocaleString('en-PK')}</strong>${Number(s.count) === 1 ? 'game' : 'games'}</span>
       <span class="scard__go" aria-hidden="true">${icon('right', 16)}</span>
     </div>
   </a>`;
+};
 
-api('/series').then(({ series }) => {
+// Older API versions only send the count: fetch the first few games of such a series
+const withGames = (s) => (s.games ? s : api('/games', { params: { series: s.slug, pageSize: MAX_NAMES + 1 } })
+  .then(({ games }) => ({ ...s, games: games.map((g) => g.name), cover: s.cover || games.find((g) => g.image)?.image || '' }))
+  .catch(() => ({ ...s, games: [] })));
+
+api('/series').then(async ({ series }) => {
   if (!series.length) return;
-  $('#seriesRail').innerHTML = series.map(seriesCard).join('');
+  const full = await Promise.all(series.map(withGames));
+  $('#seriesRail').innerHTML = full.map(seriesCard).join('');
   $('#seriesSection').hidden = false;
 }).catch(() => { /* series are optional: the section just stays hidden */ });
