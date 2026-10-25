@@ -92,10 +92,9 @@
       <div class="container">
         <div class="section__head">
           <div><h2 class="section__title" id="seriesTitle">Game series</h2><p class="section__sub">Pick a series and get the whole saga in one place.</p></div>
-          <div class="rail-btns"><button class="icon-btn" data-rail-btn="seriesRail" data-dir="prev" aria-label="Scroll series left" data-i="left"></button><button class="icon-btn" data-rail-btn="seriesRail" data-dir="next" aria-label="Scroll series right" data-i="right"></button></div>
+          <div class="rail-btns" id="seriesBtns"><button class="icon-btn" id="seriesPrev" type="button" aria-label="Previous series" data-i="left"></button><button class="icon-btn" id="seriesNext" type="button" aria-label="Next series" data-i="right"></button></div>
         </div>
-        <div class="rail rail--series" id="seriesRail" tabindex="0" aria-label="Game series"></div>
-        <div class="series-dots" id="seriesDots" aria-label="Series pages" hidden></div>
+        <div class="sr-rail" id="seriesRail" role="list" aria-label="Game series"></div>
       </div>
     </section>
 

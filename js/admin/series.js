@@ -6,7 +6,7 @@ import { errorState } from '../components.js';
 
 const $ = (id) => document.getElementById(id);
 const OK = ['image/png', 'image/webp', 'image/jpeg'];
-const DROP = () => `${icon('image', 28)}<b>Upload cover</b><small>Portrait image, 9:16 works best · max 5 MB</small>`;
+const DROP = () => `${icon('image', 28)}<b>Upload cover</b><small>Portrait image, 5:8 (e.g. 600×960) works best · max 5 MB</small>`;
 let list = [];
 let file = null;
 
@@ -28,8 +28,9 @@ async function load() {
     ({ series: list } = await adminApi('/admin/series'));
     box.innerHTML = list.length ? list.map(card).join('') : '<p class="muted sr-empty">No series yet. Create your first one above.</p>';
     $('srCount').textContent = `${list.length} series`;
-  } catch {
-    box.innerHTML = errorState('Unable to load series');
+  } catch (err) {
+    box.innerHTML = errorState(err.status === 404 ? 'The series API was not found on the server' : (err.message || 'Unable to load series'));
+    if (err.status === 404) box.querySelector('.state p').textContent = 'The backend running at this address does not have the series routes yet. Deploy the latest backend, or test locally by opening this page with ?api=local.';
     box.querySelector('[data-retry]').addEventListener('click', load);
   }
 }
@@ -66,19 +67,20 @@ const patch = async (id, body, ok) => {
   });
 
   $('srCreate').addEventListener('click', async (e) => {
+    const btn = e.currentTarget;
     const name = $('srName').value.trim();
     if (name.length < 2) return toast('Enter a series name', 'error');
     const fd = new FormData();
     fd.set('name', name);
     if (file) fd.set('image', file);
-    setBusy(e.currentTarget, true, 'Creating…');
+    setBusy(btn, true, 'Creating…');
     try {
       await adminApi('/admin/series', { method: 'POST', body: fd });
       toast('Series created', 'success');
       file = null; $('srFile').value = ''; $('srName').value = ''; $('srPrev').innerHTML = DROP();
       load();
     } catch (err) { toast(err.message, 'error'); }
-    setBusy(e.currentTarget, false);
+    setBusy(btn, false);
   });
 
   const list$ = $('srList');

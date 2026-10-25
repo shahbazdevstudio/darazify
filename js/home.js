@@ -80,79 +80,53 @@ document.querySelectorAll('[data-rail-btn]').forEach((b) => b.addEventListener('
 }));
 
 /* ------------------------------ Game series ------------------------------ */
-// A clean cover card built only from the series API: cover image (image.url), name and total games.
-// On hover (or keyboard focus) the image dims under an overlay showing the name and the game count.
-// The cover can be { url, publicId } (admin shape) or a plain url string (public shape).
+// Cards are built ONLY from the public series API (GET /api/series): { id, name, slug, count, image }.
+// `image` is a plain URL (the cover the admin uploaded, or the first game's picture as a fallback).
+// The rail is a native scroll-snap row: it works with touch, mouse wheel, keyboard and the arrow buttons,
+// with no transform maths that could break.
 const coverOf = (s) => (typeof s.image === 'string' ? s.image : s.image?.url) || '';
 
 const seriesCard = (s) => {
   const cover = coverOf(s);
   const count = Number(s.count) || 0;
+  const label = `${s.name} series, ${plural(count, 'game')}`;
   return `
-  <a class="scard${cover ? '' : ' scard--noimg'}" href="/pages/games.html?series=${encodeURIComponent(s.slug)}" aria-label="${esc(s.name)} series, ${plural(count, 'game')}">
-    ${cover ? `<img class="scard__img" src="${esc(gameImg(cover, 640))}" alt="${esc(s.name)}" loading="lazy" width="316" height="400">` : ''}
-    <span class="scard__overlay">
+  <a class="scard${cover ? '' : ' scard--noimg'}" role="listitem" href="/pages/games.html?series=${encodeURIComponent(s.slug)}" aria-label="${esc(label)}">
+    ${cover ? `<img class="scard__img" src="${esc(gameImg(cover, 480))}" alt="" loading="lazy" decoding="async" width="200" height="320" onerror="var a=this.parentElement;this.remove();a.classList.add('scard--noimg')">` : ''}
+    <span class="scard__letter" aria-hidden="true">${esc(s.name.trim().charAt(0).toUpperCase())}</span>
+    <span class="scard__info">
       <span class="scard__name">${esc(s.name)}</span>
-      <span class="scard__count">${icon('gamepad', 15)}${esc(plural(count, 'game'))}</span>
+      <span class="scard__count">${icon('gamepad', 14)}${esc(plural(count, 'game'))}</span>
     </span>
   </a>`;
 };
 
-// Auto-swiping slider with pagination dots (native scroll + snap, so touch swipe still works)
-const initSeriesSlider = (rail, dotsEl) => {
-  const cards = [...rail.children];
-  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const DELAY = 3800;
-  let pages = 1, perView = 1, current = 0, timer = null, paused = false, visible = true;
-
-  const measure = () => {
-    const step = cards.length > 1 ? cards[1].offsetLeft - cards[0].offsetLeft : rail.clientWidth;
-    perView = Math.max(1, Math.round((rail.clientWidth + 1) / Math.max(step, 1)));
-    pages = Math.max(1, Math.ceil(cards.length / perView));
-    dotsEl.hidden = pages <= 1;
-    dotsEl.innerHTML = Array.from({ length: pages }, (_, i) => `<button type="button" class="series-dot" data-page="${i}" aria-label="Go to page ${i + 1}"></button>`).join('');
-    mark(pageFromScroll());
+const initSeriesRail = (rail, prev, next, btns) => {
+  const sync = () => {
+    const max = rail.scrollWidth - rail.clientWidth;
+    btns.hidden = max <= 4; // everything fits: no arrows needed
+    prev.disabled = rail.scrollLeft <= 4;
+    next.disabled = rail.scrollLeft >= max - 4;
   };
-  const maxScroll = () => rail.scrollWidth - rail.clientWidth;
-  const pageFromScroll = () => {
-    if (pages <= 1) return 0;
-    if (rail.scrollLeft >= maxScroll() - 4) return pages - 1;
-    const step = cards[1].offsetLeft - cards[0].offsetLeft;
-    return Math.min(pages - 1, Math.round(rail.scrollLeft / (step * perView)));
-  };
-  const mark = (i) => {
-    current = i;
-    dotsEl.querySelectorAll('.series-dot').forEach((d, n) => { d.classList.toggle('is-active', n === i); d.setAttribute('aria-current', n === i ? 'true' : 'false'); });
-  };
-  const goTo = (i) => {
-    const card = cards[Math.min(cards.length - 1, i * perView)];
-    const left = Math.min(maxScroll(), rail.scrollLeft + card.getBoundingClientRect().left - rail.getBoundingClientRect().left);
-    rail.scrollTo({ left: i === pages - 1 ? maxScroll() : left, behavior: 'smooth' });
-  };
-  const tick = () => { if (!paused && visible && !document.hidden && pages > 1) goTo((current + 1) % pages); };
-  const start = () => { stop(); if (!reduceMotion) timer = setInterval(tick, DELAY); };
-  const stop = () => { clearInterval(timer); timer = null; };
-  const pause = (v) => { paused = v; };
-
-  rail.addEventListener('scroll', () => mark(pageFromScroll()), { passive: true });
-  dotsEl.addEventListener('click', (e) => { const d = e.target.closest('[data-page]'); if (d) { goTo(Number(d.dataset.page)); start(); } });
-  ['mouseenter', 'focusin', 'touchstart'].forEach((ev) => rail.addEventListener(ev, () => pause(true), { passive: true }));
-  ['mouseleave', 'focusout'].forEach((ev) => rail.addEventListener(ev, () => pause(false)));
-  rail.addEventListener('touchend', () => setTimeout(() => pause(false), 2500), { passive: true });
-  if ('IntersectionObserver' in window) new IntersectionObserver(([en]) => { visible = en.isIntersecting; }, { threshold: 0.2 }).observe(rail);
-  let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(measure, 150); });
-
-  measure();
-  start();
+  const move = (dir) => rail.scrollBy({ left: dir * rail.clientWidth * 0.9, behavior: 'smooth' });
+  prev.addEventListener('click', () => move(-1));
+  next.addEventListener('click', () => move(1));
+  rail.addEventListener('scroll', () => requestAnimationFrame(sync), { passive: true });
+  window.addEventListener('resize', sync);
+  rail.querySelectorAll('img').forEach((im) => im.addEventListener('load', sync, { once: true }));
+  sync();
 };
 
-// Public series endpoint (same data as /admin/series: name, slug, image, count). The admin one needs
-// an admin login, so normal visitors could never load it.
-api('/series').then(({ series }) => {
-  const list = (series || []).filter((s) => s.isActive !== false && s.name && s.slug);
+const loadSeries = () => api('/series').then(({ series }) => {
+  const list = (series || []).filter((s) => s && s.name && s.slug);
   if (!list.length) return;
   const rail = $('#seriesRail');
   rail.innerHTML = list.map(seriesCard).join('');
-  $('#seriesSection').hidden = false;
-  initSeriesSlider(rail, $('#seriesDots'));
-}).catch(() => { /* series are optional: the section just stays hidden */ });
+  $('#seriesSection').hidden = false; // visible before measuring the rail
+  initSeriesRail(rail, $('#seriesPrev'), $('#seriesNext'), $('#seriesBtns'));
+}).catch((err) => {
+  // Series are optional on the home page, so the section just stays hidden, but say why in the console.
+  console.warn('[series] Could not load /series:', err?.message || err, '(is the latest backend deployed? try ?api=local)');
+});
+
+loadSeries();
