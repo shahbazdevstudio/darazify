@@ -117,13 +117,118 @@ const initSeriesRail = (rail, prev, next, btns) => {
   sync();
 };
 
+/* Continuous infinite loop. The rail keeps its native scroll container (touch, wheel and keyboard still work).
+   The cards are rendered as 3 identical sets (before / middle / after); the position always stays inside the
+   middle set, and when it leaves it, it is shifted by exactly one set width: the picture is identical, so the
+   jump is invisible. Each set is repeated until it is wider than the rail, so a few cards never leave a blank gap. */
+const initSeriesLoop = (rail, prev, next, btns, list) => {
+  const SPEED = 42;      // px per second
+  const unit = list.map(seriesCard);
+  const N = unit.length;
+  let reps = 0, setW = 0, pos = 0;
+  let hover = false, focused = false, visible = true, touching = false, userUntil = 0, anim = null, factor = 0;
+
+  const render = (r) => {
+    const set = unit.join('').repeat(r);
+    rail.innerHTML = (set + set + set).replace(/loading="lazy"/g, 'loading="eager"');
+    [...rail.children].forEach((el, i) => {
+      if (i >= r * N && i < r * N + N) return; // the first card set of the middle block are the real cards
+      el.setAttribute('aria-hidden', 'true');   // copies are for looks only: hidden from screen readers and Tab
+      el.tabIndex = -1;
+    });
+  };
+  const measure = () => {
+    const per = rail.children[N] ? rail.children[N].offsetLeft - rail.children[0].offsetLeft : 0; // width of one set
+    return per;
+  };
+  const wrap = (p) => { while (p < setW) p += setW; while (p >= 2 * setW) p -= setW; return p; };
+
+  const layout = () => {
+    const oldW = setW, oldPos = pos;
+    if (!reps) render(1);
+    const need = Math.max(1, Math.ceil((rail.clientWidth + 8) / (measure() || 1)));
+    if (need !== reps) {
+      reps = need;
+      render(reps);
+    }
+    setW = measure();
+    if (!setW) return;
+    const frac = oldW ? (((oldPos - oldW) / oldW) % 1 + 1) % 1 : 0;
+    pos = setW + frac * setW;
+    rail.scrollLeft = pos;
+  };
+
+  rail.classList.add('is-loop');
+  layout();
+
+  const tick = (now) => {
+    const dt = Math.min(now - tick.last, 50) / 1000;
+    tick.last = now;
+    if (setW && now >= userUntil) {
+      const paused = hover || focused || !visible || document.hidden || anim;
+      factor += ((paused ? 0 : 1) - factor) * Math.min(1, dt * 6); // eased stop / start, no sudden halt or jerk
+      let d = SPEED * factor * dt;
+      if (anim) {
+        const p = Math.min(1, (now - anim.start) / anim.dur);
+        const target = anim.delta * (1 - Math.pow(1 - p, 3));
+        d += target - anim.applied;
+        anim.applied = target;
+        if (p >= 1) anim = null;
+      }
+      if (d) { pos = wrap(pos + d); rail.scrollLeft = pos; }
+    }
+    requestAnimationFrame(tick);
+  };
+  tick.last = performance.now();
+  requestAnimationFrame(tick);
+
+  // The arrows glide by one view, inside the same animation loop
+  const go = (dir) => { userUntil = 0; anim = { start: performance.now(), dur: 650, delta: dir * rail.clientWidth * 0.9, applied: 0 }; };
+  prev.addEventListener('click', () => go(-1));
+  next.addEventListener('click', () => go(1));
+  prev.disabled = next.disabled = false;
+  btns.hidden = false;
+
+  // Hover (mouse only) and keyboard focus pause the slider; leaving resumes it smoothly
+  rail.addEventListener('pointerenter', (e) => { if (e.pointerType === 'mouse') hover = true; });
+  rail.addEventListener('pointerleave', () => { hover = false; });
+  rail.addEventListener('focusin', () => { focused = true; });
+  rail.addEventListener('focusout', () => { focused = false; });
+
+  // The visitor scrolls by hand: follow their finger / wheel / keys, then continue from where they stopped
+  const hold = () => { userUntil = performance.now() + 1500; anim = null; };
+  rail.addEventListener('wheel', (e) => { if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) hold(); }, { passive: true });
+  rail.addEventListener('touchstart', () => { touching = true; userUntil = Infinity; anim = null; }, { passive: true });
+  const touchEnd = () => { if (touching) { touching = false; userUntil = performance.now() + 1200; } };
+  rail.addEventListener('touchend', touchEnd, { passive: true });
+  rail.addEventListener('touchcancel', touchEnd, { passive: true });
+  rail.addEventListener('keydown', (e) => { if (e.key.startsWith('Arrow')) hold(); });
+  rail.addEventListener('scroll', () => {
+    const now = performance.now();
+    if (now >= userUntil) return; // our own movement
+    if (userUntil !== Infinity) userUntil = now + 1200;
+    pos = rail.scrollLeft;
+    const w = wrap(pos);
+    if (w !== pos) { pos = w; rail.scrollLeft = w; }
+  }, { passive: true });
+
+  if ('IntersectionObserver' in window) new IntersectionObserver(([en]) => { visible = en.isIntersecting; }).observe(rail);
+  let rz;
+  window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(layout, 150); });
+};
+
 const loadSeries = () => api('/series').then(({ series }) => {
   const list = (series || []).filter((s) => s && s.name && s.slug);
   if (!list.length) return;
   const rail = $('#seriesRail');
-  rail.innerHTML = list.map(seriesCard).join('');
   $('#seriesSection').hidden = false; // visible before measuring the rail
-  initSeriesRail(rail, $('#seriesPrev'), $('#seriesNext'), $('#seriesBtns'));
+  if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
+    // Reduced motion: no automatic movement, keep the plain scroll-snap rail
+    rail.innerHTML = list.map(seriesCard).join('');
+    initSeriesRail(rail, $('#seriesPrev'), $('#seriesNext'), $('#seriesBtns'));
+    return;
+  }
+  initSeriesLoop(rail, $('#seriesPrev'), $('#seriesNext'), $('#seriesBtns'), list);
 }).catch((err) => {
   // Series are optional on the home page, so the section just stays hidden, but say why in the console.
   console.warn('[series] Could not load /series:', err?.message || err, '(is the latest backend deployed? try ?api=local)');

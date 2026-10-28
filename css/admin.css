@@ -282,3 +282,6 @@
   .rk-img { width: 64px; height: 36px; }
   .rk-actions { grid-column: 1 / -1; justify-content: flex-end; }
 }
+
+/* Ranking search */
+.rk-search { margin-top: .4rem; max-width: 460px; }

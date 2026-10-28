@@ -1,7 +1,7 @@
 import { mountAdmin, adminApi, toast } from './core.js';
 import { icon } from '../icons.js';
 import { confirmDialog } from '../ui.js';
-import { esc, gameImg } from '../utils.js';
+import { esc, gameImg, debounce } from '../utils.js';
 import { errorState, renderPagination } from '../components.js';
 import { PAGE_SIZE } from '../config.js';
 
@@ -18,6 +18,7 @@ let games = [];
 let total = 0;
 let busy = false;
 let seq = 0;
+let query = ''; // ranking search (game name); empty = the normal paged list
 
 const limitOf = () => TABS[tab].limit;
 /** Where this position ends up on the website. */
@@ -25,7 +26,7 @@ const where = (pos) => {
   if (tab === 'all') return ` · Website page ${Math.ceil(pos / limitOf())}`;
   return pos <= limitOf() ? ' · Shown on the home page' : ' · Not shown on the home page';
 };
-const sep = (pos) => (tab === 'all' && (pos - 1) % limitOf() === 0 ? `<li class="rk-sep" aria-hidden="true">Website page ${Math.ceil(pos / limitOf())}</li>` : '');
+const sep = (pos) => (!query && tab === 'all' && (pos - 1) % limitOf() === 0 ? `<li class="rk-sep" aria-hidden="true">Website page ${Math.ceil(pos / limitOf())}</li>` : '');
 
 const row = (g) => sep(g.position) + `
   <li class="rk-row ${g.pinned ? 'is-pinned' : ''}" data-id="${g._id}" data-pos="${g.position}">
@@ -45,15 +46,18 @@ async function load() {
   const box = $('rkBox');
   box.classList.add('is-busy');
   try {
-    const d = await adminApi(`/admin/games/ranking/${tab}`, { params: { page, limit: limitOf() } });
+    const d = await adminApi(`/admin/games/ranking/${tab}`, { params: { page, limit: limitOf(), ...(query ? { search: query } : {}) } });
     if (my !== seq) return;
-    if (page > 1 && !d.games.length) { page = Math.max(1, d.pagination.totalPages); return load(); }
+    if (!query && page > 1 && !d.games.length) { page = Math.max(1, d.pagination.totalPages); return load(); }
     games = d.games;
     total = d.pagination.total;
-    $('rkMeta').textContent = `${total} game${total === 1 ? '' : 's'} · ${d.pinned} with a fixed position`;
+    $('rkMeta').textContent = query
+      ? `${d.pagination.matches} match${d.pagination.matches === 1 ? '' : 'es'} for “${query}” · ${total} game${total === 1 ? '' : 's'} in this list`
+      : `${total} game${total === 1 ? '' : 's'} · ${d.pinned} with a fixed position`;
     $('rkReset').hidden = !d.pinned;
-    box.innerHTML = games.length ? `<ol class="rk-list" id="rkList">${games.map(row).join('')}</ol>` : `<p class="muted rk-empty">${TABS[tab].empty}</p>`;
-    renderPagination($('pager'), d.pagination, (p) => { page = p; load(); window.scrollTo({ top: 0, behavior: 'smooth' }); });
+    box.innerHTML = games.length ? `<ol class="rk-list" id="rkList">${games.map(row).join('')}</ol>` : `<p class="muted rk-empty">${query ? `No game in this list matches “${esc(query)}”.` : TABS[tab].empty}</p>`;
+    if (query) $('pager').innerHTML = '';
+    else renderPagination($('pager'), d.pagination, (p) => { page = p; load(); window.scrollTo({ top: 0, behavior: 'smooth' }); });
   } catch {
     if (my !== seq) return;
     box.innerHTML = errorState('Unable to load the ranking');
@@ -70,7 +74,7 @@ async function move(id, position) {
   try {
     const { position: final } = await adminApi(`/admin/games/ranking/${tab}/${id}`, { method: 'PUT', body: { position } });
     toast(`Moved to position ${final}`, 'success', 1800);
-    page = Math.ceil(final / limitOf()); // follow the game to its new page
+    if (!query) page = Math.ceil(final / limitOf()); // follow the game to its new page (in search mode the results stay, with fresh positions)
   } catch (err) { toast(err.message, 'error'); }
   busy = false;
   await load();
@@ -83,6 +87,7 @@ async function move(id, position) {
       <div class="chips" role="tablist" aria-label="Ranking list">${Object.entries(TABS).map(([k, t]) => `<button class="chip chip--btn ${k === tab ? 'is-on' : ''}" role="tab" data-tab="${k}" aria-selected="${k === tab}">${t.label}</button>`).join('')}</div>
       <p class="gadd__lead" id="rkHint"></p>
       <p class="gadd__lead"><b>How to use:</b> drag a game, type its position number, or use the arrows. The game takes that exact place and the others move one step. Other games never change place on their own.</p>
+      <div class="input-icon rk-search"><span>${icon('search', 18)}</span><input class="input" id="rkQuery" type="search" placeholder="Search a game in this list by name" aria-label="Search a game in this ranking" autocomplete="off" maxlength="80"></div>
       <div class="rk-bar"><span class="muted" id="rkMeta"></span><button class="btn btn-sm btn-secondary" id="rkReset" hidden>Reset to default order</button></div>
     </section>
     <section class="card-box card-box--flush"><div id="rkBox"><div class="skeleton" style="height:320px"></div></div></section>
@@ -96,6 +101,12 @@ async function move(id, position) {
     $('rkHint').textContent = TABS[tab].hint;
     load();
   }));
+
+  // Search inside the ranking: results come from the same API list, each with its real position,
+  // so typing a number, the arrows and drag and drop work exactly as in the full list.
+  const applySearch = (v) => { const next = v.trim(); if (next === query) return; query = next; page = 1; load(); };
+  $('rkQuery').addEventListener('input', debounce((e) => applySearch(e.target.value), 300));
+  $('rkQuery').addEventListener('search', (e) => applySearch(e.target.value)); // the native clear (×) button
 
   const box = $('rkBox');
   box.addEventListener('change', (e) => {

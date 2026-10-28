@@ -4,6 +4,7 @@
 .sr-rail { --per: 6; --gap: .9rem; display: flex; gap: var(--gap); overflow-x: auto; overscroll-behavior-x: contain; scroll-snap-type: x mandatory; padding: .8rem .6rem 1rem; margin-inline: -.6rem; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
 .sr-rail::-webkit-scrollbar { display: none; }
 .sr-rail > * { flex: 0 0 calc((100% - var(--gap) * (var(--per) - 1)) / var(--per)); min-width: 0; scroll-snap-align: start; }
+.sr-rail.is-loop { scroll-snap-type: none; scroll-behavior: auto; }
 .rail-btns .icon-btn:disabled { opacity: .35; cursor: default; pointer-events: none; }
 
 .scard { position: relative; display: block; aspect-ratio: 5 / 8; overflow: hidden; isolation: isolate; background: linear-gradient(160deg, var(--surface-2), var(--surface)); border: 1.5px solid var(--thread); border-radius: 16px; box-shadow: var(--shadow-1); transition: transform .45s var(--ease), box-shadow .45s var(--ease); }
