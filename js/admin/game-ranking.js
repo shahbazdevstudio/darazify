@@ -55,7 +55,13 @@ async function load() {
       ? `${d.pagination.matches} match${d.pagination.matches === 1 ? '' : 'es'} for “${query}” · ${total} game${total === 1 ? '' : 's'} in this list`
       : `${total} game${total === 1 ? '' : 's'} · ${d.pinned} with a fixed position`;
     $('rkReset').hidden = !d.pinned;
-    box.innerHTML = games.length ? `<ol class="rk-list" id="rkList">${games.map(row).join('')}</ol>` : `<p class="muted rk-empty">${query ? `No game in this list matches “${esc(query)}”.` : TABS[tab].empty}</p>`;
+    const other = query && d.elsewhere && tab !== 'all'
+      ? `<p class="muted rk-empty">${d.elsewhere} more game${d.elsewhere === 1 ? '' : 's'} matching “${esc(query)}” ${d.elsewhere === 1 ? 'is' : 'are'} in the store but not in <b>${TABS[tab].label}</b>. <button class="btn btn-sm btn-secondary" type="button" data-goall>Search in All games</button></p>`
+      : '';
+    box.innerHTML = games.length
+      ? `<ol class="rk-list" id="rkList">${games.map(row).join('')}</ol>${other}`
+      : (query ? `<p class="muted rk-empty">No game in <b>${TABS[tab].label}</b> matches “${esc(query)}”.</p>${other}` : `<p class="muted rk-empty">${TABS[tab].empty}</p>`);
+    box.querySelector('[data-goall]')?.addEventListener('click', () => document.querySelector('[data-tab="all"]').click());
     if (query) $('pager').innerHTML = '';
     else renderPagination($('pager'), d.pagination, (p) => { page = p; load(); window.scrollTo({ top: 0, behavior: 'smooth' }); });
   } catch {

@@ -62,6 +62,15 @@
 .patch strong { font: 700 1.55rem/1 var(--font-display); letter-spacing: -.02em; }
 .patch span { font-size: .8rem; opacity: .85; margin-top: .25rem; }
 
+/* "Coming soon" leather tag: same stitched patch style as the Digital Games patch */
+.hero__copy { position: relative; }
+.hero__soon {
+  position: absolute; z-index: 6; top: -1.4rem; right: -3.2rem; transform: rotate(-4deg); text-align: center;
+  padding: .75rem 1.3rem; border-radius: 14px; font: 700 1.3rem/1.2 var(--font-display); letter-spacing: -.01em; color: #f6e6c4;
+  background: linear-gradient(160deg, #8a4a22, #5e2f15); border: 2px solid #e4c88f; box-shadow: 0 18px 30px -14px rgba(0, 0, 0, .75);
+}
+.hero__soon::before { content: ''; position: absolute; inset: 4px; border: 1.5px dashed rgba(228, 200, 143, .6); border-radius: 9px; pointer-events: none; }
+
 /* Perks strip */
 .perks { display: grid; grid-template-columns: repeat(3, 1fr); border: 1px solid var(--line); border-radius: var(--r-lg); background: var(--surface); overflow: hidden; margin-top: -2.2rem; position: relative; z-index: 3; box-shadow: var(--shadow-1); }
 .perk { display: flex; gap: 1rem; padding: 1.4rem 1.6rem; align-items: flex-start; }
@@ -85,6 +94,7 @@
   .hero__inner { grid-template-columns: 1fr; min-height: 0; padding-block: 2.5rem 3.5rem; gap: 2.5rem; }
   .hero__stage { height: 380px; max-width: 520px; width: 100%; margin-inline: auto; }
   .patch { left: 0; bottom: 0; }
+  .hero__soon { position: relative; top: 0; right: 0; display: inline-block; margin-bottom: 1.2rem; font-size: 1.1rem; }
   .perks { grid-template-columns: 1fr; margin-top: -1.6rem; }
   .perk + .perk { border-left: 0; border-top: 1.5px dashed var(--line-strong); }
 }
