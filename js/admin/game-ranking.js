@@ -8,6 +8,7 @@ import { PAGE_SIZE } from '../config.js';
 const TABS = {
   hero: { limit: 3, label: 'Featured banner', hint: 'The games in the big home page banner (max 3). Position 1 is shown first.', empty: 'No game is in the banner yet. Turn on <b>Hero</b> for a game in Games → In your store.' },
   popular: { limit: 10, label: 'Popular games', hint: 'The order of the Popular games section on the home page. The home page shows the first 10.', empty: 'No popular games yet. Turn on <b>Popular</b> for a game in Games → In your store.' },
+  latest: { limit: 8, label: 'Latest games', hint: 'The order of the Latest games section on the home page. The home page shows the first 8. A game you just switched on appears at the top until you move it.', empty: 'No latest games yet. Turn on <b>Latest</b> for a game in Games → In your store.' },
   all: { limit: PAGE_SIZE.games, label: 'All games', hint: `The order of the Games page. Each block below is one page of the website (${PAGE_SIZE.games} games per page). Games without a number follow the numbered ones in the default order (newest first).`, empty: 'No games in the store yet.' },
 };
 
